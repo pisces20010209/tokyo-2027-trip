@@ -3,6 +3,7 @@
 跑法： streamlit run app.py --server.headless true
 """
 
+from collections import defaultdict
 from datetime import datetime
 
 import folium
@@ -11,7 +12,7 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 import gist_store
-from data import CANDIDATE_SPOTS, DAYS, SPOTS
+from data import ATTRACTION_CANDIDATES, CANDIDATE_SPOTS, DAYS, FOOD_CANDIDATES, SPOTS, TODOS
 
 DAY_COLORS = {
     1: "cadetblue", 2: "cadetblue", 3: "cadetblue",
@@ -21,21 +22,8 @@ DAY_COLORS = {
 
 st.set_page_config(page_title="2027 東京家族旅遊", page_icon="🗾", layout="wide")
 
-
-SUGGESTION_COLUMNS = ["時間", "提交人", "地點", "備註", "偏好Day", "緯度", "經度", "定位狀態"]
-
-
-def load_suggestions() -> pd.DataFrame:
-    rows = gist_store.load_suggestions()
-    if not rows:
-        return pd.DataFrame(columns=SUGGESTION_COLUMNS)
-    return pd.DataFrame(rows)
-
-
-def save_suggestion(row: dict) -> bool:
-    rows = gist_store.load_suggestions()
-    rows.append(row)
-    return gist_store.save_suggestions(rows)
+if "voter_name" not in st.session_state:
+    st.session_state.voter_name = ""
 
 
 def geocode_place(place_name: str):
@@ -46,15 +34,75 @@ def geocode_place(place_name: str):
         location = geolocator.geocode(f"{place_name}, Japan", timeout=8)
         if location:
             return location.latitude, location.longitude, "成功定位"
-        return None, None, "找不到位置，已收到建議但地圖上不會顯示"
+        return None, None, "找不到位置，已收到願望但地圖上不會顯示"
     except Exception:
-        return None, None, "定位服務暫時無法使用，已收到建議但地圖上不會顯示"
+        return None, None, "定位服務暫時無法使用，已收到願望但地圖上不會顯示"
+
+
+def render_voter_name_input():
+    st.session_state.voter_name = st.text_input(
+        "你是誰（投票/許願都會用這個名字）", value=st.session_state.voter_name, key="voter_name_input"
+    )
+    if not st.session_state.voter_name.strip():
+        st.info("填一下名字，才能投票喔")
+    return st.session_state.voter_name.strip()
+
+
+def render_vote_section(candidates: list[dict], item_type: str, voter: str):
+    votes = gist_store.load_votes()
+    counts = defaultdict(int)
+    voters_by_item = defaultdict(list)
+    my_votes = set()
+    for v in votes:
+        if v.get("item_type") != item_type:
+            continue
+        counts[v["item_id"]] += 1
+        voters_by_item[v["item_id"]].append(v["voter"])
+        if voter and v["voter"] == voter:
+            my_votes.add(v["item_id"])
+
+    areas = sorted({c["area"] for c in candidates}, key=lambda a: [c["area"] for c in candidates].index(a))
+    for area in areas:
+        with st.expander(f"**{area}**", expanded=False):
+            for cand in [c for c in candidates if c["area"] == area]:
+                col1, col2, col3 = st.columns([4, 1, 1.4])
+                with col1:
+                    st.markdown(f"**{cand['name']}**　`{cand['category']}`")
+                    if cand.get("desc"):
+                        st.caption(cand["desc"])
+                with col2:
+                    st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
+                with col3:
+                    voted = cand["id"] in my_votes
+                    label = "✅ 已投" if voted else "🗳️ 投票"
+                    if st.button(label, key=f"{item_type}_{cand['id']}", disabled=not voter, use_container_width=True):
+                        if voted:
+                            votes = [
+                                v for v in votes
+                                if not (v["item_id"] == cand["id"] and v["item_type"] == item_type and v["voter"] == voter)
+                            ]
+                        else:
+                            votes.append(
+                                {
+                                    "item_id": cand["id"],
+                                    "item_type": item_type,
+                                    "voter": voter,
+                                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                                }
+                            )
+                        if gist_store.save_votes(votes):
+                            st.rerun()
+                if voters_by_item.get(cand["id"]):
+                    st.caption("投給這個的人：" + "、".join(voters_by_item[cand["id"]]))
+                st.divider()
 
 
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
-st.caption("11人・全員iPhone・這頁大家都能看到同一份內容，家人建議會即時同步")
+st.caption("11人・全員iPhone・這頁大家都能看到同一份內容，投票/許願會即時同步")
 
-tab_itinerary, tab_map, tab_suggest = st.tabs(["📅 逐日行程", "🗺️ 地圖", "💡 家人建議"])
+tab_itinerary, tab_map, tab_food, tab_spot, tab_wish, tab_todo = st.tabs(
+    ["📅 逐日行程", "🗺️ 地圖", "🍜 美食投票", "🎡 景點投票", "🌟 許願池", "✅ 待辦清單"]
+)
 
 with tab_itinerary:
     for d in DAYS:
@@ -70,7 +118,7 @@ with tab_itinerary:
                 st.markdown(f"- {item}")
 
 with tab_map:
-    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），紫色＝家人建議地點")
+    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），紫色＝許願池地點")
 
     m = folium.Map(location=[35.68, 139.55], zoom_start=9, tiles="OpenStreetMap")
 
@@ -90,23 +138,36 @@ with tab_map:
             icon=folium.Icon(color="lightgray", icon="question-sign"),
         ).add_to(m)
 
-    suggestions_df = load_suggestions()
-    valid_suggestions = suggestions_df.dropna(subset=["緯度", "經度"]) if not suggestions_df.empty else suggestions_df
-    for _, row in valid_suggestions.iterrows():
-        folium.Marker(
-            location=[row["緯度"], row["經度"]],
-            popup=f"<b>{row['地點']}</b><br>{row['提交人']} 提議<br>{row.get('備註', '')}",
-            tooltip=f"💡 {row['地點']}",
-            icon=folium.Icon(color="purple", icon="star"),
-        ).add_to(m)
+    suggestions_df = pd.DataFrame(gist_store.load_suggestions())
+    if not suggestions_df.empty and "緯度" in suggestions_df.columns:
+        valid_suggestions = suggestions_df.dropna(subset=["緯度", "經度"])
+        for _, row in valid_suggestions.iterrows():
+            folium.Marker(
+                location=[row["緯度"], row["經度"]],
+                popup=f"<b>{row['地點']}</b><br>{row['提交人']} 許願<br>{row.get('備註', '')}",
+                tooltip=f"🌟 {row['地點']}",
+                icon=folium.Icon(color="purple", icon="star"),
+            ).add_to(m)
 
     st_folium(m, use_container_width=True, height=600, returned_objects=[])
 
-with tab_suggest:
-    st.markdown("### 提議想去的地方")
-    st.caption("填完送出後，大家（包含地圖分頁）都會看到你加的地點")
+with tab_food:
+    st.markdown("### 美食投票")
+    st.caption("把想吃的都投一票，我會根據票數安排對應那天的用餐地點")
+    voter = render_voter_name_input()
+    render_vote_section(FOOD_CANDIDATES, "food", voter)
 
-    with st.form("suggestion_form", clear_on_submit=True):
+with tab_spot:
+    st.markdown("### 景點投票")
+    st.caption("這些是還沒排進固定行程的候選景點，投票高的會優先安插進去")
+    voter = render_voter_name_input()
+    render_vote_section(ATTRACTION_CANDIDATES, "attraction", voter)
+
+with tab_wish:
+    st.markdown("### 🌟 許願池")
+    st.caption("候選清單沒有的地方，想去哪裡都可以在這裡許願；其他人也可以幫你的願望+1")
+
+    with st.form("wish_form", clear_on_submit=True):
         col1, col2 = st.columns(2)
         with col1:
             submitted_by = st.text_input("你是誰（名字）")
@@ -117,7 +178,7 @@ with tab_suggest:
                 ["都可以"] + [f"Day {d['day']}（{d['date']}）" for d in DAYS],
             )
             note = st.text_area("備註（為什麼想去/想吃什麼）", height=80)
-        submitted = st.form_submit_button("送出建議")
+        submitted = st.form_submit_button("送出願望")
 
     if submitted:
         if not place_name.strip():
@@ -125,7 +186,8 @@ with tab_suggest:
         else:
             with st.spinner("定位中..."):
                 lat, lon, geo_status = geocode_place(place_name)
-            ok = save_suggestion(
+            rows = gist_store.load_suggestions()
+            rows.append(
                 {
                     "時間": datetime.now().strftime("%Y-%m-%d %H:%M"),
                     "提交人": submitted_by or "匿名",
@@ -137,18 +199,34 @@ with tab_suggest:
                     "定位狀態": geo_status,
                 }
             )
-            if ok:
-                st.success(f"已加入！{geo_status}")
+            if gist_store.save_suggestions(rows):
+                st.success(f"許願成功！{geo_status}")
                 st.rerun()
 
     st.markdown("---")
-    st.markdown("### 目前所有建議")
-    current = load_suggestions()
-    if current.empty:
-        st.caption("還沒有人提議，第一個來寫吧！")
+    st.markdown("### 目前所有願望")
+    current_rows = gist_store.load_suggestions()
+    if not current_rows:
+        st.caption("還沒有人許願，第一個來寫吧！")
     else:
         st.dataframe(
-            current[["時間", "提交人", "地點", "偏好Day", "備註", "定位狀態"]],
+            pd.DataFrame(current_rows)[["時間", "提交人", "地點", "偏好Day", "備註", "定位狀態"]],
             use_container_width=True,
             hide_index=True,
         )
+
+with tab_todo:
+    st.markdown("### ✅ 待辦清單")
+    st.caption("誰都可以打勾，狀態大家共用")
+
+    todo_state = gist_store.load_todos()
+    changed = False
+    for item in TODOS:
+        current = todo_state.get(item["id"], item["default_done"])
+        checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
+        if checked != current:
+            todo_state[item["id"]] = checked
+            changed = True
+    if changed:
+        gist_store.save_todos(todo_state)
+        st.rerun()

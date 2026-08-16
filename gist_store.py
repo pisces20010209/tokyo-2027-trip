@@ -1,12 +1,12 @@
-"""Shared suggestions storage backed by a private GitHub Gist.
+"""Shared app state backed by a private GitHub Gist (multiple files in one gist).
 
-Using a Gist instead of a local file means every viewer (and every redeploy
+Using a Gist instead of local files means every viewer (and every redeploy
 on Streamlit Community Cloud, which does not guarantee local disk persists)
 reads/writes the same data.
 
-Auth: needs a GitHub token with only the 'gist' scope, provided via
-st.secrets["GITHUB_TOKEN"] (set in Streamlit Cloud's app Secrets) or the
-GITHUB_TOKEN environment variable for local runs.
+Auth: needs a GitHub token with only the 'Gists: Read and write' user
+permission, provided via st.secrets["GITHUB_TOKEN"] (set in Streamlit
+Cloud's app Secrets) or the GITHUB_TOKEN environment variable locally.
 """
 
 import json
@@ -16,8 +16,13 @@ import requests
 import streamlit as st
 
 GIST_ID = "7aeb471696a4f9a187dce24171a0fca7"
-FILENAME = "suggestions.json"
 API_URL = f"https://api.github.com/gists/{GIST_ID}"
+
+FILES = {
+    "suggestions": "suggestions.json",
+    "votes": "votes.json",
+    "todos": "todos.json",
+}
 
 
 def _token() -> str | None:
@@ -36,23 +41,28 @@ def _headers() -> dict:
     return {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
 
 
-def load_suggestions() -> list[dict]:
+def _load(key: str, default):
+    filename = FILES[key]
     try:
         resp = requests.get(API_URL, headers=_headers(), timeout=10)
         resp.raise_for_status()
-        content = resp.json()["files"][FILENAME]["content"]
-        return json.loads(content) if content.strip() else []
+        files = resp.json()["files"]
+        if filename not in files:
+            return default
+        content = files[filename]["content"]
+        return json.loads(content) if content.strip() else default
     except Exception as exc:  # noqa: BLE001
-        st.warning(f"讀取家人建議失敗，稍後再試（{exc}）")
-        return []
+        st.warning(f"讀取資料失敗，稍後再試（{exc}）")
+        return default
 
 
-def save_suggestions(rows: list[dict]) -> bool:
+def _save(key: str, data) -> bool:
+    filename = FILES[key]
     try:
         resp = requests.patch(
             API_URL,
             headers=_headers(),
-            json={"files": {FILENAME: {"content": json.dumps(rows, ensure_ascii=False, indent=2)}}},
+            json={"files": {filename: {"content": json.dumps(data, ensure_ascii=False, indent=2)}}},
             timeout=10,
         )
         resp.raise_for_status()
@@ -60,3 +70,29 @@ def save_suggestions(rows: list[dict]) -> bool:
     except Exception as exc:  # noqa: BLE001
         st.error(f"儲存失敗，請稍後再試（{exc}）")
         return False
+
+
+def load_suggestions() -> list[dict]:
+    return _load("suggestions", [])
+
+
+def save_suggestions(rows: list[dict]) -> bool:
+    return _save("suggestions", rows)
+
+
+def load_votes() -> list[dict]:
+    """Each vote record: {item_id, item_type, voter, time}."""
+    return _load("votes", [])
+
+
+def save_votes(rows: list[dict]) -> bool:
+    return _save("votes", rows)
+
+
+def load_todos() -> dict:
+    """Map of todo id -> bool (done)."""
+    return _load("todos", {})
+
+
+def save_todos(state: dict) -> bool:
+    return _save("todos", state)
