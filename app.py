@@ -153,6 +153,13 @@ with tab_map:
 
     st_folium(m, use_container_width=True, height=600, returned_objects=[])
 
+    st.markdown("### 官方地鐵路線圖")
+    st.caption("資訊較多，適合要查確切站名/轉乘方式時再點開")
+    with st.expander("繁體中文版（含站號，2023.05，建議當主要參考）"):
+        st.image("assets/metro_map_tcn.png", width="stretch")
+    with st.expander("日文版（2020.06，備用對照）"):
+        st.image("assets/metro_map_ja.png", width="stretch")
+
 with tab_food:
     st.markdown("### 美食投票")
     st.caption("把想吃的都投一票，我會根據票數安排對應那天的用餐地點；名單裡沒有的想吃什麼，去「許願池」填")
