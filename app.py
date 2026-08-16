@@ -5,6 +5,7 @@
 
 from collections import defaultdict
 from datetime import datetime
+from urllib.parse import quote
 
 import folium
 import pandas as pd
@@ -39,13 +40,15 @@ def geocode_place(place_name: str):
         return None, None, "定位服務暫時無法使用，已收到願望但地圖上不會顯示"
 
 
-def render_voter_name_input():
-    st.session_state.voter_name = st.text_input(
-        "你是誰（投票/許願都會用這個名字）", value=st.session_state.voter_name, key="voter_name_input"
+def render_voter_name_input(tab_key: str):
+    field_key = f"voter_name_input_{tab_key}"
+    name = st.text_input(
+        "你是誰（投票/許願都會用這個名字）", value=st.session_state.voter_name, key=field_key
     )
-    if not st.session_state.voter_name.strip():
+    st.session_state.voter_name = name
+    if not name.strip():
         st.info("填一下名字，才能投票喔")
-    return st.session_state.voter_name.strip()
+    return name.strip()
 
 
 def render_vote_section(candidates: list[dict], item_type: str, voter: str):
@@ -67,14 +70,13 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
             for cand in [c for c in candidates if c["area"] == area]:
                 col1, col2, col3 = st.columns([4, 1, 1.4])
                 with col1:
-                    st.markdown(f"**{cand['name']}**　`{cand['category']}`")
-                    if cand.get("desc"):
-                        st.caption(cand["desc"])
+                    search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
+                    st.markdown(f"**{cand['name']}**　[🔗介紹]({search_url})")
                 with col2:
                     st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
                 with col3:
                     voted = cand["id"] in my_votes
-                    label = "✅ 已投" if voted else "🗳️ 投票"
+                    label = "✅ 已投" if voted else "🗳️ +1"
                     if st.button(label, key=f"{item_type}_{cand['id']}", disabled=not voter, use_container_width=True):
                         if voted:
                             votes = [
@@ -153,14 +155,14 @@ with tab_map:
 
 with tab_food:
     st.markdown("### 美食投票")
-    st.caption("把想吃的都投一票，我會根據票數安排對應那天的用餐地點")
-    voter = render_voter_name_input()
+    st.caption("把想吃的都投一票，我會根據票數安排對應那天的用餐地點；名單裡沒有的想吃什麼，去「許願池」填")
+    voter = render_voter_name_input("food")
     render_vote_section(FOOD_CANDIDATES, "food", voter)
 
 with tab_spot:
     st.markdown("### 景點投票")
-    st.caption("這些是還沒排進固定行程的候選景點，投票高的會優先安插進去")
-    voter = render_voter_name_input()
+    st.caption("投票高的會優先安插進行程；名單裡沒有的想去哪裡，去「許願池」填")
+    voter = render_voter_name_input("attraction")
     render_vote_section(ATTRACTION_CANDIDATES, "attraction", voter)
 
 with tab_wish:
