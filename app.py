@@ -106,6 +106,62 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                 st.divider()
 
 
+def render_food_vote_section(candidates: list[dict], voter: str):
+    votes = gist_store.load_votes()
+    counts = defaultdict(int)
+    voters_by_item = defaultdict(list)
+    my_votes = set()
+    for v in votes:
+        if v.get("item_type") != "food":
+            continue
+        counts[v["item_id"]] += 1
+        voters_by_item[v["item_id"]].append(v["voter"])
+        if voter and v["voter"] == voter:
+            my_votes.add(v["item_id"])
+
+    regions = sorted({c["region"] for c in candidates}, key=lambda r: [c["region"] for c in candidates].index(r))
+    region = st.radio("選地區", regions, horizontal=True, key="food_region")
+
+    region_items = [c for c in candidates if c["region"] == region]
+    categories = sorted(
+        {c["category"] for c in region_items}, key=lambda x: [c["category"] for c in region_items].index(x)
+    )
+    for category in categories:
+        cat_items = [c for c in region_items if c["category"] == category]
+        with st.expander(f"**{category}**（{len(cat_items)}家）", expanded=False):
+            for cand in cat_items:
+                col1, col2, col3 = st.columns([4, 1, 1.4])
+                with col1:
+                    search_url = f"https://www.google.com/search?q={quote(cand['name'] + ' ' + cand['location'])}"
+                    st.markdown(f"**{cand['name']}**　[🔗介紹]({search_url})")
+                    st.caption(f"📍{cand['location']}　{cand['note']}")
+                with col2:
+                    st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
+                with col3:
+                    voted = cand["id"] in my_votes
+                    label = "✅ 已投" if voted else "🗳️ +1"
+                    if st.button(label, key=f"food_{cand['id']}", disabled=not voter, use_container_width=True):
+                        if voted:
+                            votes = [
+                                v for v in votes
+                                if not (v["item_id"] == cand["id"] and v["item_type"] == "food" and v["voter"] == voter)
+                            ]
+                        else:
+                            votes.append(
+                                {
+                                    "item_id": cand["id"],
+                                    "item_type": "food",
+                                    "voter": voter,
+                                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                                }
+                            )
+                        if gist_store.save_votes(votes):
+                            st.rerun()
+                if voters_by_item.get(cand["id"]):
+                    st.caption("投給這個的人：" + "、".join(voters_by_item[cand["id"]]))
+                st.divider()
+
+
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
 st.caption("11人・全員iPhone・這頁大家都能看到同一份內容，投票/許願會即時同步")
 
@@ -181,9 +237,9 @@ with tab_map:
 
 with tab_food:
     st.markdown("### 美食投票")
-    st.caption("把想吃的都投一票，我會根據票數安排對應那天的用餐地點；名單裡沒有的想吃什麼，去「許願池」填")
+    st.caption("246家具體店家，先選地區再選分類；把想吃的都投一票，我會根據票數安排對應那天的用餐地點。名單裡沒有的想吃什麼，去「許願池」填")
     voter = render_voter_name_input("food")
-    render_vote_section(FOOD_CANDIDATES, "food", voter)
+    render_food_vote_section(FOOD_CANDIDATES, voter)
 
 with tab_spot:
     st.markdown("### 景點投票")
