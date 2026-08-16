@@ -193,12 +193,46 @@ CANDIDATE_SPOTS = [
 ]
 
 # 投票候選：景點＋美食都是純清單、不綁日期，票數高的之後優先排進行程
+#
+# ⚠️ 維護提醒：itinerary.md / DAYS 的行程異動時，這份對照表也要一起更新——
+# 已經排進固定行程的項目就從投票開放改成「已排入 Day N」標記，不能再投票。
+ALREADY_SCHEDULED = {
+    "富士山景觀纜車": 2,
+    "天上山公園": 2,
+    "忍野八海": 2,
+    "新倉山淺間公園・忠靈塔": 2,
+    "日川時計店／本町通富士山街景": 2,
+    "富士野生動物園": 3,
+    "豪德寺🐱": 4,
+    "秋葉原": 4,
+    "淺草寺": 5,
+    "仲見世通": 5,
+    "晴空塔": 5,
+    "東京 Solamachi": 5,
+    "東京迪士尼海洋": 6,
+    "豐洲市場": 7,
+    "teamLab Planets": 7,
+    "Shibuya Sky": 7,
+    "澀谷十字路口": 7,
+    "忠犬八公": 7,
+    "上野公園": 8,
+    "阿美橫町": 8,
+}
+
+
 def _build_candidates(prefix: str, groups: dict) -> list:
     items = []
     counter = 1
     for area, names in groups.items():
         for name in names:
-            items.append({"id": f"{prefix}{counter:03d}", "area": area, "name": name})
+            items.append(
+                {
+                    "id": f"{prefix}{counter:03d}",
+                    "area": area,
+                    "name": name,
+                    "scheduled_day": ALREADY_SCHEDULED.get(name),
+                }
+            )
             counter += 1
     return items
 

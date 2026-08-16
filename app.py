@@ -72,6 +72,13 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                 with col1:
                     search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
                     st.markdown(f"**{cand['name']}**　[🔗介紹]({search_url})")
+                if cand.get("scheduled_day"):
+                    with col2:
+                        st.caption("")
+                    with col3:
+                        st.success(f"✅ 已排入 Day {cand['scheduled_day']}", icon=None)
+                    st.divider()
+                    continue
                 with col2:
                     st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
                 with col3:
