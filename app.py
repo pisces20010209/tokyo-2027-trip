@@ -13,7 +13,7 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 import gist_store
-from data import ATTRACTION_CANDIDATES, CANDIDATE_SPOTS, DAYS, FOOD_CANDIDATES, SPOTS, TODOS
+from data import ATTRACTION_CANDIDATES, CANDIDATE_SPOTS, DAYS, FLIGHTS, FOOD_CANDIDATES, HOTELS, SPOTS, TODOS
 
 DAY_COLORS = {
     1: "cadetblue", 2: "cadetblue", 3: "cadetblue",
@@ -107,6 +107,18 @@ tab_itinerary, tab_map, tab_food, tab_spot, tab_wish, tab_todo = st.tabs(
 )
 
 with tab_itinerary:
+    with st.container(border=True):
+        st.markdown("#### ✈️ 機票")
+        for f in FLIGHTS:
+            st.markdown(f"- **{f['flight']}**　{f['date']}　{f['route']}　{f['time']}")
+
+        st.markdown("#### 🏨 住宿")
+        for h in HOTELS:
+            st.markdown(
+                f"- **{h['name']}**（{h['dates']}）\n"
+                f"　　📍{h['address']}　☎️{h['phone']}"
+            )
+
     for d in DAYS:
         with st.container(border=True):
             head_col1, head_col2 = st.columns([5, 1])

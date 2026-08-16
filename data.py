@@ -4,6 +4,26 @@ Source of truth for prose content is ../itinerary.md — when the itinerary
 changes there, update this file's DAYS list to match.
 """
 
+FLIGHTS = [
+    {"flight": "星宇 JX802", "date": "1/21（週四）", "route": "桃園 TPE → 成田 NRT", "time": "10:10 起飛 / 14:20 抵達"},
+    {"flight": "星宇 JX803", "date": "1/29（週五）", "route": "成田 NRT → 桃園 TPE", "time": "15:40 起飛 / 18:45 抵達"},
+]
+
+HOTELS = [
+    {
+        "name": "湖山亭產屋",
+        "dates": "1/21–1/23",
+        "address": "山梨縣南都留郡富士河口湖町淺川10",
+        "phone": "0555-72-1145",
+    },
+    {
+        "name": "MONday Apart Premium 上野御徒町",
+        "dates": "1/23–1/29",
+        "address": "東京都台東区上野3-8-8",
+        "phone": "03-5816-1237",
+    },
+]
+
 DAYS = [
     {
         "day": 1,
