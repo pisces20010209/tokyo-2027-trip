@@ -43,26 +43,21 @@ def geocode_place(place_name: str):
 def render_voter_name_input(tab_key: str):
     field_key = f"voter_name_input_{tab_key}"
     name = st.text_input(
-        "你是誰（投票/許願都會用這個名字）", value=st.session_state.voter_name, key=field_key
+        "你是誰（選填——填了會記錄是誰投的，不填就算匿名，一樣可以投票）",
+        value=st.session_state.voter_name,
+        key=field_key,
     )
     st.session_state.voter_name = name
-    if not name.strip():
-        st.info("填一下名字，才能投票喔")
     return name.strip()
 
 
 def render_vote_section(candidates: list[dict], item_type: str, voter: str):
     votes = gist_store.load_votes()
     counts = defaultdict(int)
-    voters_by_item = defaultdict(list)
-    my_votes = set()
     for v in votes:
         if v.get("item_type") != item_type:
             continue
         counts[v["item_id"]] += 1
-        voters_by_item[v["item_id"]].append(v["voter"])
-        if voter and v["voter"] == voter:
-            my_votes.add(v["item_id"])
 
     areas = sorted({c["area"] for c in candidates}, key=lambda a: [c["area"] for c in candidates].index(a))
     for area in areas:
@@ -77,23 +72,16 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                         st.caption(f"✅ Day {cand['scheduled_day']}")
                     continue
                 with col2:
-                    voted = cand["id"] in my_votes
-                    label = f"✅ {counts.get(cand['id'], 0)}" if voted else f"🗳️ {counts.get(cand['id'], 0)}"
-                    if st.button(label, key=f"{item_type}_{cand['id']}", disabled=not voter, use_container_width=True):
-                        if voted:
-                            votes = [
-                                v for v in votes
-                                if not (v["item_id"] == cand["id"] and v["item_type"] == item_type and v["voter"] == voter)
-                            ]
-                        else:
-                            votes.append(
-                                {
-                                    "item_id": cand["id"],
-                                    "item_type": item_type,
-                                    "voter": voter,
-                                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                                }
-                            )
+                    label = f"🗳️ +1（{counts.get(cand['id'], 0)}）"
+                    if st.button(label, key=f"{item_type}_{cand['id']}", use_container_width=True):
+                        votes.append(
+                            {
+                                "item_id": cand["id"],
+                                "item_type": item_type,
+                                "voter": voter or "匿名",
+                                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            }
+                        )
                         if gist_store.save_votes(votes):
                             st.rerun()
 
@@ -101,15 +89,10 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
 def render_food_vote_section(candidates: list[dict], voter: str):
     votes = gist_store.load_votes()
     counts = defaultdict(int)
-    voters_by_item = defaultdict(list)
-    my_votes = set()
     for v in votes:
         if v.get("item_type") != "food":
             continue
         counts[v["item_id"]] += 1
-        voters_by_item[v["item_id"]].append(v["voter"])
-        if voter and v["voter"] == voter:
-            my_votes.add(v["item_id"])
 
     regions = sorted({c["region"] for c in candidates}, key=lambda r: [c["region"] for c in candidates].index(r))
     region = st.radio("選地區", regions, horizontal=True, key="food_region")
@@ -131,23 +114,16 @@ def render_food_vote_section(candidates: list[dict], voter: str):
                         unsafe_allow_html=True,
                     )
                 with col2:
-                    voted = cand["id"] in my_votes
-                    label = f"✅ {counts.get(cand['id'], 0)}" if voted else f"🗳️ {counts.get(cand['id'], 0)}"
-                    if st.button(label, key=f"food_{cand['id']}", disabled=not voter, use_container_width=True):
-                        if voted:
-                            votes = [
-                                v for v in votes
-                                if not (v["item_id"] == cand["id"] and v["item_type"] == "food" and v["voter"] == voter)
-                            ]
-                        else:
-                            votes.append(
-                                {
-                                    "item_id": cand["id"],
-                                    "item_type": "food",
-                                    "voter": voter,
-                                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                                }
-                            )
+                    label = f"🗳️ +1（{counts.get(cand['id'], 0)}）"
+                    if st.button(label, key=f"food_{cand['id']}", use_container_width=True):
+                        votes.append(
+                            {
+                                "item_id": cand["id"],
+                                "item_type": "food",
+                                "voter": voter or "匿名",
+                                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            }
+                        )
                         if gist_store.save_votes(votes):
                             st.rerun()
 
