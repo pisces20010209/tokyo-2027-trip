@@ -187,7 +187,7 @@ with tab_map:
     for spot in SPOTS:
         folium.Marker(
             location=[spot["lat"], spot["lon"]],
-            popup=f"<b>{spot['name']}</b><br>Day {spot['day']}・{spot['category']}",
+            popup=folium.Popup(f"<b>{spot['name']}</b><br>Day {spot['day']}・{spot['category']}", max_width=260),
             tooltip=spot["name"],
             icon=folium.Icon(color=DAY_COLORS.get(spot["day"], "gray"), icon="info-sign"),
         ).add_to(m)
@@ -195,7 +195,7 @@ with tab_map:
     for cand in CANDIDATE_SPOTS:
         folium.Marker(
             location=[cand["lat"], cand["lon"]],
-            popup=f"<b>{cand['name']}</b><br>{cand['note']}",
+            popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['note']}", max_width=260),
             tooltip=f"{cand['name']}（候選）",
             icon=folium.Icon(color="lightgray", icon="question-sign"),
         ).add_to(m)
@@ -206,7 +206,9 @@ with tab_map:
         for _, row in valid_suggestions.iterrows():
             folium.Marker(
                 location=[row["緯度"], row["經度"]],
-                popup=f"<b>{row['地點']}</b><br>{row['提交人']} 許願<br>{row.get('備註', '')}",
+                popup=folium.Popup(
+                    f"<b>{row['地點']}</b><br>{row['提交人']} 許願<br>{row.get('備註', '')}", max_width=260
+                ),
                 tooltip=f"🌟 {row['地點']}",
                 icon=folium.Icon(color="purple", icon="star"),
             ).add_to(m)
