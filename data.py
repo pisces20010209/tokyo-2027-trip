@@ -159,26 +159,28 @@ DAYS = [
     },
 ]
 
-# Confirmed itinerary locations for the map. Coordinates are approximate
-# (city/landmark level), good enough for orientation — not survey-grade.
+# Confirmed itinerary locations for the map. Coordinates verified via
+# Nominatim/OSM geocoding where a real match was found (see webapp git log for
+# the verification run); a few tiny shops (no OSM listing) remain
+# city/landmark-level estimates and are marked below.
 SPOTS = [
     {"name": "桃園機場", "day": 1, "category": "交通", "lat": 25.0777, "lon": 121.2325},
     {"name": "成田機場", "day": 1, "category": "交通", "lat": 35.7720, "lon": 140.3929},
-    {"name": "湖山亭產屋（住宿）", "day": 1, "category": "住宿", "lat": 35.5010, "lon": 138.7520},
+    {"name": "湖山亭產屋（住宿）", "day": 1, "category": "住宿", "lat": 35.5101, "lon": 138.7755},  # area-level (淺川), exact building not in OSM
     {"name": "河口湖纜車／天上山公園", "day": 2, "category": "景點", "lat": 35.5075, "lon": 138.7720},
-    {"name": "忍野八海", "day": 2, "category": "景點", "lat": 35.4520, "lon": 138.8280},
-    {"name": "新倉山淺間公園・忠靈塔", "day": 2, "category": "景點", "lat": 35.4880, "lon": 138.8060},
-    {"name": "日川時計店", "day": 2, "category": "景點", "lat": 35.4940, "lon": 138.8090},
-    {"name": "大石公園", "day": 2, "category": "景點", "lat": 35.5265, "lon": 138.7565},
-    {"name": "產屋ヶ崎", "day": 2, "category": "景點", "lat": 35.5199, "lon": 138.7724},
-    {"name": "西湖療癒之里根場", "day": 2, "category": "景點", "lat": 35.5145, "lon": 138.6825},
-    {"name": "十里木高原展望台", "day": 3, "category": "景點", "lat": 35.2980, "lon": 138.8850},
-    {"name": "富士サファリパーク", "day": 3, "category": "景點", "lat": 35.3096, "lon": 138.9377},
-    {"name": "MONday Apart Premium 上野御徒町（住宿）", "day": 3, "category": "住宿", "lat": 35.7079, "lon": 139.7745},
+    {"name": "忍野八海", "day": 2, "category": "景點", "lat": 35.4602, "lon": 138.8327},
+    {"name": "新倉山淺間公園・忠靈塔", "day": 2, "category": "景點", "lat": 35.5005, "lon": 138.8008},
+    {"name": "日川時計店", "day": 2, "category": "景點", "lat": 35.4940, "lon": 138.8090},  # 估計值，OSM無收錄
+    {"name": "大石公園", "day": 2, "category": "景點", "lat": 35.5233, "lon": 138.7465},
+    {"name": "產屋ヶ崎", "day": 2, "category": "景點", "lat": 35.5131, "lon": 138.7660},
+    {"name": "西湖療癒之里根場", "day": 2, "category": "景點", "lat": 35.5145, "lon": 138.6825},  # 估計值，OSM無收錄
+    {"name": "十里木高原展望台", "day": 3, "category": "景點", "lat": 35.2604, "lon": 138.8141},
+    {"name": "富士サファリパーク", "day": 3, "category": "景點", "lat": 35.2602, "lon": 138.8062},
+    {"name": "MONday Apart Premium 上野御徒町（住宿）", "day": 3, "category": "住宿", "lat": 35.7054, "lon": 139.7733},
     {"name": "豪德寺", "day": 4, "category": "景點", "lat": 35.6428, "lon": 139.6497},
     {"name": "新宿站", "day": 4, "category": "交通", "lat": 35.6896, "lon": 139.7006},
     {"name": "秋葉原", "day": 4, "category": "景點", "lat": 35.6984, "lon": 139.7731},
-    {"name": "アキバフクロウ 貓頭鷹咖啡廳", "day": 4, "category": "景點", "lat": 35.6994, "lon": 139.7724},
+    {"name": "アキバフクロウ 貓頭鷹咖啡廳", "day": 4, "category": "景點", "lat": 35.7008, "lon": 139.7749},
     {"name": "淺草寺・雷門", "day": 5, "category": "景點", "lat": 35.7148, "lon": 139.7967},
     {"name": "仲見世通", "day": 5, "category": "景點", "lat": 35.7133, "lon": 139.7960},
     {"name": "合羽橋道具街", "day": 5, "category": "景點", "lat": 35.7128, "lon": 139.7900},
