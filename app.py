@@ -3,13 +3,11 @@
 跑法： streamlit run app.py --server.headless true
 """
 
-import hashlib
 import html
 import json
 import os
 from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
 from urllib.parse import quote
 
 import folium
@@ -37,9 +35,6 @@ _SUGGESTION_COLOR_HEX = "#8E24AA"
 # Above this, render_map() falls back to the free OpenStreetMap/folium map instead
 # of initializing Google Maps JS, so we never actually reach Google's billed tier.
 GOOGLE_SOFT_CAP = 8000
-
-# Requires [server] enableStaticServing = true in .streamlit/config.toml.
-_STATIC_DIR = Path(__file__).parent / "static"
 
 st.set_page_config(page_title="2027 東京家族旅遊", page_icon="🗾", layout="wide")
 
@@ -339,24 +334,6 @@ def _build_google_map_html(picked_regions: list[str], suggestions: list[dict], a
 """
 
 
-def _write_google_map_static(html_content: str) -> str:
-    """Writes the map HTML to a real file under static/ (Streamlit's static file
-    serving) and returns its relative URL, instead of embedding the HTML string
-    directly via iframe srcdoc. Google's HTTP-referrer key restriction needs a
-    real page URL to check against — an srcdoc iframe reports "about:srcdoc" as
-    its origin, which the restriction can never match, so the API key would
-    have to go unrestricted to work at all. Filename is a content hash so
-    identical map states (e.g. the same picked_regions filter picked by two
-    different family members) reuse one file instead of colliding or piling up."""
-    _STATIC_DIR.mkdir(exist_ok=True)
-    digest = hashlib.md5(html_content.encode("utf-8")).hexdigest()[:12]
-    filename = f"map_{digest}.html"
-    path = _STATIC_DIR / filename
-    if not path.exists():
-        path.write_text(html_content, encoding="utf-8")
-    return f"/app/static/{filename}"
-
-
 def render_map() -> None:
     """Map tab body. Uses Google Maps JS when GOOGLE_MAPS_API_KEY is configured
     and this month's usage (tracked via gist_store's maplog counter) is under
@@ -408,8 +385,7 @@ def render_map() -> None:
     )
     if needs_rebuild:
         if use_google:
-            html_content = _build_google_map_html(picked_regions, suggestions, api_key)
-            st.session_state["_map_obj"] = _write_google_map_static(html_content)
+            st.session_state["_map_obj"] = _build_google_map_html(picked_regions, suggestions, api_key)
             gist_store.bump_maplog()
         else:
             st.session_state["_map_obj"] = _build_folium_map(picked_regions, suggestions)
