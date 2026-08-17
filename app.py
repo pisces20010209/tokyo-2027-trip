@@ -68,22 +68,17 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
     for area in areas:
         with st.expander(f"**{area}**", expanded=False):
             for cand in [c for c in candidates if c["area"] == area]:
-                col1, col2, col3 = st.columns([4, 1, 1.4])
+                col1, col2 = st.columns([5, 1.3])
+                search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
                 with col1:
-                    search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
-                    st.markdown(f"**{cand['name']}**　[🔗介紹]({search_url})")
+                    st.markdown(f"**{cand['name']}** [🔗]({search_url})", help=None)
                 if cand.get("scheduled_day"):
                     with col2:
-                        st.caption("")
-                    with col3:
-                        st.success(f"✅ 已排入 Day {cand['scheduled_day']}", icon=None)
-                    st.divider()
+                        st.caption(f"✅ Day {cand['scheduled_day']}")
                     continue
                 with col2:
-                    st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
-                with col3:
                     voted = cand["id"] in my_votes
-                    label = "✅ 已投" if voted else "🗳️ +1"
+                    label = f"✅ {counts.get(cand['id'], 0)}" if voted else f"🗳️ {counts.get(cand['id'], 0)}"
                     if st.button(label, key=f"{item_type}_{cand['id']}", disabled=not voter, use_container_width=True):
                         if voted:
                             votes = [
@@ -101,9 +96,6 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                             )
                         if gist_store.save_votes(votes):
                             st.rerun()
-                if voters_by_item.get(cand["id"]):
-                    st.caption("投給這個的人：" + "、".join(voters_by_item[cand["id"]]))
-                st.divider()
 
 
 def render_food_vote_section(candidates: list[dict], voter: str):
@@ -130,16 +122,17 @@ def render_food_vote_section(candidates: list[dict], voter: str):
         cat_items = [c for c in region_items if c["category"] == category]
         with st.expander(f"**{category}**（{len(cat_items)}家）", expanded=False):
             for cand in cat_items:
-                col1, col2, col3 = st.columns([4, 1, 1.4])
+                col1, col2 = st.columns([5, 1.3])
                 with col1:
                     search_url = f"https://www.google.com/search?q={quote(cand['name'] + ' ' + cand['location'])}"
-                    st.markdown(f"**{cand['name']}**　[🔗介紹]({search_url})")
-                    st.caption(f"📍{cand['location']}　{cand['note']}")
+                    st.markdown(
+                        f"**{cand['name']}** [🔗]({search_url})　"
+                        f"<span style='color:gray;font-size:0.85em'>📍{cand['location']}・{cand['note']}</span>",
+                        unsafe_allow_html=True,
+                    )
                 with col2:
-                    st.metric("票數", counts.get(cand["id"], 0), label_visibility="collapsed")
-                with col3:
                     voted = cand["id"] in my_votes
-                    label = "✅ 已投" if voted else "🗳️ +1"
+                    label = f"✅ {counts.get(cand['id'], 0)}" if voted else f"🗳️ {counts.get(cand['id'], 0)}"
                     if st.button(label, key=f"food_{cand['id']}", disabled=not voter, use_container_width=True):
                         if voted:
                             votes = [
@@ -157,9 +150,6 @@ def render_food_vote_section(candidates: list[dict], voter: str):
                             )
                         if gist_store.save_votes(votes):
                             st.rerun()
-                if voters_by_item.get(cand["id"]):
-                    st.caption("投給這個的人：" + "、".join(voters_by_item[cand["id"]]))
-                st.divider()
 
 
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
