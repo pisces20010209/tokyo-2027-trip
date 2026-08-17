@@ -3,6 +3,7 @@
 跑法： streamlit run app.py --server.headless true
 """
 
+import json
 from collections import defaultdict
 from datetime import datetime
 from urllib.parse import quote
@@ -98,7 +99,10 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                 col1, col2 = st.columns([4, 2])
                 search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
                 with col1:
-                    st.markdown(f"**{cand['name']}** [🔗]({search_url})", help=None)
+                    st.markdown(
+                        f"**{cand['name']}** <a href='{search_url}' target='_blank' rel='noopener noreferrer'>🔗</a>",
+                        unsafe_allow_html=True,
+                    )
                 if cand.get("scheduled_day"):
                     with col2:
                         st.caption(f"✅ Day {cand['scheduled_day']}")
@@ -139,12 +143,122 @@ def render_food_vote_section(candidates: list[dict], voter: str):
                 with col1:
                     search_url = f"https://www.google.com/search?q={quote(cand['name'] + ' ' + cand['location'])}"
                     st.markdown(
-                        f"**{cand['name']}** [🔗]({search_url})　"
+                        f"**{cand['name']}** <a href='{search_url}' target='_blank' rel='noopener noreferrer'>🔗</a>　"
                         f"<span style='color:gray;font-size:0.85em'>📍{cand['location']}・{cand['note']}</span>",
                         unsafe_allow_html=True,
                     )
                 with col2:
                     render_vote_controls(votes, cand["id"], "food", voter, counts.get(cand["id"], 0), f"food_{cand['id']}")
+
+
+def _suggestions_fingerprint(suggestions: list[dict]) -> int:
+    """Change-detector for gist wish-pool data; hashes content rather than just
+    len() since existing entries could in principle be edited, not just appended."""
+    return hash(json.dumps(suggestions, sort_keys=True, ensure_ascii=False))
+
+
+def _build_folium_map(picked_regions: list[str], suggestions: list[dict]) -> folium.Map:
+    """Pure builder, no Streamlit calls inside. This is the one function a future
+    Google Maps swap-in replaces/wraps; render_map() controls when it gets called."""
+    m = folium.Map(location=[35.68, 139.55], zoom_start=9, tiles="OpenStreetMap")
+
+    for spot in SPOTS:
+        folium.Marker(
+            location=[spot["lat"], spot["lon"]],
+            popup=folium.Popup(f"<b>{spot['name']}</b><br>Day {spot['day']}・{spot['category']}", max_width=260),
+            tooltip=spot["name"],
+            icon=folium.Icon(color=DAY_COLORS.get(spot["day"], "gray"), icon="info-sign"),
+        ).add_to(m)
+
+    for cand in CANDIDATE_SPOTS:
+        folium.Marker(
+            location=[cand["lat"], cand["lon"]],
+            popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['note']}", max_width=260),
+            tooltip=f"{cand['name']}（候選）",
+            icon=folium.Icon(color="lightgray", icon="question-sign"),
+        ).add_to(m)
+
+    if picked_regions:
+        for cand in ATTRACTION_CANDIDATES:
+            if cand["area"] not in picked_regions or cand["lat"] is None:
+                continue
+            if cand.get("scheduled_day"):
+                continue  # already shown via SPOTS with its day color
+            folium.Marker(
+                location=[cand["lat"], cand["lon"]],
+                popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['area']}・尚未排入行程", max_width=260),
+                tooltip=f"{cand['name']}（候選）",
+                icon=folium.Icon(color="lightgray", icon="question-sign"),
+            ).add_to(m)
+
+    suggestions_df = pd.DataFrame(suggestions)
+    if not suggestions_df.empty and "緯度" in suggestions_df.columns:
+        valid_suggestions = suggestions_df.dropna(subset=["緯度", "經度"])
+        for _, row in valid_suggestions.iterrows():
+            folium.Marker(
+                location=[row["緯度"], row["經度"]],
+                popup=folium.Popup(
+                    f"<b>{row['地點']}</b><br>{row['提交人']} 許願<br>{row.get('備註', '')}", max_width=260
+                ),
+                tooltip=f"🌟 {row['地點']}",
+                icon=folium.Icon(color="purple", icon="star"),
+            ).add_to(m)
+
+    return m
+
+
+def render_map() -> None:
+    """Map tab body. State-gated: only rebuilds the folium.Map object (and bumps
+    the debug render counter) when picked_regions or the gist suggestions data
+    actually changed since the last render this session — an unrelated rerun
+    (e.g. a vote click in another tab, since st.tabs() re-executes every tab's
+    body on every rerun) reuses the cached map object instead of rebuilding it.
+
+    Caveat: st_folium is a proper declared Streamlit component with its own
+    remount semantics. A future Google Maps JS embed will likely use
+    st.components.v1.html(...) instead, which behaves differently — this
+    state-gating pattern transfers, but whether it actually prevents extra
+    Google "map load" billing events can only be confirmed once that real
+    embed exists, via a browser DevTools Network-tab check (see project memory
+    notes on the Google Maps migration for the full verification plan)."""
+    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，紫色＝許願池地點")
+
+    candidate_regions = sorted(
+        {c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None},
+        key=lambda a: [c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None].index(a),
+    )
+    picked_regions = st.multiselect(
+        "要在地圖上加顯示哪些地區的候選景點？（還沒排進行程的，灰色標記）",
+        candidate_regions,
+        default=[],
+        key="map_picked_regions",
+    )
+
+    suggestions = gist_store.load_suggestions()
+    signature = (tuple(sorted(picked_regions)), _suggestions_fingerprint(suggestions))
+
+    if st.session_state.get("_map_signature") != signature or "_map_obj" not in st.session_state:
+        st.session_state["_map_obj"] = _build_folium_map(picked_regions, suggestions)
+        st.session_state["_map_signature"] = signature
+        st.session_state["_map_render_count"] = st.session_state.get("_map_render_count", 0) + 1
+
+    st_folium(
+        st.session_state["_map_obj"],
+        use_container_width=True,
+        height=600,
+        returned_objects=[],
+        key="tokyo_map",
+    )
+
+    if st.query_params.get("debug") == "1":
+        st.caption(f"debug: map (re)built {st.session_state['_map_render_count']}x this session")
+
+    st.markdown("### 官方地鐵路線圖")
+    st.caption("資訊較多，適合要查確切站名/轉乘方式時再點開")
+    with st.expander("繁體中文版（含站號，2023.05，建議當主要參考）"):
+        st.image("assets/metro_map_tcn.png", width="stretch")
+    with st.expander("日文版（2020.06，備用對照）"):
+        st.image("assets/metro_map_ja.png", width="stretch")
 
 
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
@@ -180,70 +294,7 @@ with tab_itinerary:
                 st.markdown(f"- {item}")
 
 with tab_map:
-    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，紫色＝許願池地點")
-
-    candidate_regions = sorted(
-        {c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None},
-        key=lambda a: [c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None].index(a),
-    )
-    picked_regions = st.multiselect(
-        "要在地圖上加顯示哪些地區的候選景點？（還沒排進行程的，灰色標記）",
-        candidate_regions,
-        default=[],
-    )
-
-    m = folium.Map(location=[35.68, 139.55], zoom_start=9, tiles="OpenStreetMap")
-
-    for spot in SPOTS:
-        folium.Marker(
-            location=[spot["lat"], spot["lon"]],
-            popup=folium.Popup(f"<b>{spot['name']}</b><br>Day {spot['day']}・{spot['category']}", max_width=260),
-            tooltip=spot["name"],
-            icon=folium.Icon(color=DAY_COLORS.get(spot["day"], "gray"), icon="info-sign"),
-        ).add_to(m)
-
-    for cand in CANDIDATE_SPOTS:
-        folium.Marker(
-            location=[cand["lat"], cand["lon"]],
-            popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['note']}", max_width=260),
-            tooltip=f"{cand['name']}（候選）",
-            icon=folium.Icon(color="lightgray", icon="question-sign"),
-        ).add_to(m)
-
-    if picked_regions:
-        for cand in ATTRACTION_CANDIDATES:
-            if cand["area"] not in picked_regions or cand["lat"] is None:
-                continue
-            if cand.get("scheduled_day"):
-                continue  # already shown via SPOTS with its day color
-            folium.Marker(
-                location=[cand["lat"], cand["lon"]],
-                popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['area']}・尚未排入行程", max_width=260),
-                tooltip=f"{cand['name']}（候選）",
-                icon=folium.Icon(color="lightgray", icon="question-sign"),
-            ).add_to(m)
-
-    suggestions_df = pd.DataFrame(gist_store.load_suggestions())
-    if not suggestions_df.empty and "緯度" in suggestions_df.columns:
-        valid_suggestions = suggestions_df.dropna(subset=["緯度", "經度"])
-        for _, row in valid_suggestions.iterrows():
-            folium.Marker(
-                location=[row["緯度"], row["經度"]],
-                popup=folium.Popup(
-                    f"<b>{row['地點']}</b><br>{row['提交人']} 許願<br>{row.get('備註', '')}", max_width=260
-                ),
-                tooltip=f"🌟 {row['地點']}",
-                icon=folium.Icon(color="purple", icon="star"),
-            ).add_to(m)
-
-    st_folium(m, use_container_width=True, height=600, returned_objects=[])
-
-    st.markdown("### 官方地鐵路線圖")
-    st.caption("資訊較多，適合要查確切站名/轉乘方式時再點開")
-    with st.expander("繁體中文版（含站號，2023.05，建議當主要參考）"):
-        st.image("assets/metro_map_tcn.png", width="stretch")
-    with st.expander("日文版（2020.06，備用對照）"):
-        st.image("assets/metro_map_ja.png", width="stretch")
+    render_map()
 
 with tab_food:
     st.markdown("### 美食投票")

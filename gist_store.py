@@ -11,6 +11,7 @@ Cloud's app Secrets) or the GITHUB_TOKEN environment variable locally.
 
 import json
 import os
+from datetime import datetime
 
 import requests
 import streamlit as st
@@ -22,6 +23,7 @@ FILES = {
     "suggestions": "suggestions.json",
     "votes": "votes.json",
     "todos": "todos.json",
+    "maplog": "maplog.json",
 }
 
 
@@ -105,3 +107,26 @@ def load_todos() -> dict:
 
 def save_todos(state: dict) -> bool:
     return _save("todos", state)
+
+
+def load_maplog() -> dict:
+    """Monthly Google Maps JS load counter: {"month": "YYYY-MM", "count": int}.
+    Not yet called from app.py — scaffolding for the Phase B soft-cap fallback
+    (see project memory notes on the Google Maps migration)."""
+    return _load("maplog", {"month": "", "count": 0})
+
+
+def save_maplog(state: dict) -> bool:
+    return _save("maplog", state)
+
+
+def bump_maplog() -> dict:
+    """Increment this month's counter, resetting automatically on month rollover.
+    Returns the updated state so callers can compare it against a soft-cap threshold."""
+    now_month = datetime.now().strftime("%Y-%m")
+    state = load_maplog()
+    if state.get("month") != now_month:
+        state = {"month": now_month, "count": 0}
+    state["count"] += 1
+    save_maplog(state)
+    return state
