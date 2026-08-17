@@ -51,6 +51,35 @@ def render_voter_name_input(tab_key: str):
     return name.strip()
 
 
+def render_vote_controls(votes: list[dict], item_id: str, item_type: str, voter: str, count: int, key_prefix: str):
+    col_minus, col_count, col_plus = st.columns([1, 1, 1])
+    with col_minus:
+        if st.button("➖", key=f"{key_prefix}_minus", use_container_width=True, disabled=count <= 0):
+            for i in range(len(votes) - 1, -1, -1):
+                if votes[i]["item_id"] == item_id and votes[i]["item_type"] == item_type:
+                    del votes[i]
+                    break
+            if gist_store.save_votes(votes):
+                st.rerun()
+    with col_count:
+        st.markdown(
+            f"<div style='text-align:center;font-weight:800;font-size:1.6em;line-height:2.2em'>{count}</div>",
+            unsafe_allow_html=True,
+        )
+    with col_plus:
+        if st.button("➕", key=f"{key_prefix}_plus", use_container_width=True, type="primary"):
+            votes.append(
+                {
+                    "item_id": item_id,
+                    "item_type": item_type,
+                    "voter": voter or "匿名",
+                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                }
+            )
+            if gist_store.save_votes(votes):
+                st.rerun()
+
+
 def render_vote_section(candidates: list[dict], item_type: str, voter: str):
     votes = gist_store.load_votes()
     counts = defaultdict(int)
@@ -63,7 +92,7 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
     for area in areas:
         with st.expander(f"**{area}**", expanded=False):
             for cand in [c for c in candidates if c["area"] == area]:
-                col1, col2 = st.columns([5, 1.3])
+                col1, col2 = st.columns([4, 2])
                 search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
                 with col1:
                     st.markdown(f"**{cand['name']}** [🔗]({search_url})", help=None)
@@ -72,18 +101,9 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
                         st.caption(f"✅ Day {cand['scheduled_day']}")
                     continue
                 with col2:
-                    label = f"🗳️ +1（{counts.get(cand['id'], 0)}）"
-                    if st.button(label, key=f"{item_type}_{cand['id']}", use_container_width=True):
-                        votes.append(
-                            {
-                                "item_id": cand["id"],
-                                "item_type": item_type,
-                                "voter": voter or "匿名",
-                                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            }
-                        )
-                        if gist_store.save_votes(votes):
-                            st.rerun()
+                    render_vote_controls(
+                        votes, cand["id"], item_type, voter, counts.get(cand["id"], 0), f"{item_type}_{cand['id']}"
+                    )
 
 
 def render_food_vote_section(candidates: list[dict], voter: str):
@@ -105,7 +125,7 @@ def render_food_vote_section(candidates: list[dict], voter: str):
         cat_items = [c for c in region_items if c["category"] == category]
         with st.expander(f"**{category}**（{len(cat_items)}家）", expanded=False):
             for cand in cat_items:
-                col1, col2 = st.columns([5, 1.3])
+                col1, col2 = st.columns([4, 2])
                 with col1:
                     search_url = f"https://www.google.com/search?q={quote(cand['name'] + ' ' + cand['location'])}"
                     st.markdown(
@@ -114,18 +134,7 @@ def render_food_vote_section(candidates: list[dict], voter: str):
                         unsafe_allow_html=True,
                     )
                 with col2:
-                    label = f"🗳️ +1（{counts.get(cand['id'], 0)}）"
-                    if st.button(label, key=f"food_{cand['id']}", use_container_width=True):
-                        votes.append(
-                            {
-                                "item_id": cand["id"],
-                                "item_type": "food",
-                                "voter": voter or "匿名",
-                                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            }
-                        )
-                        if gist_store.save_votes(votes):
-                            st.rerun()
+                    render_vote_controls(votes, cand["id"], "food", voter, counts.get(cand["id"], 0), f"food_{cand['id']}")
 
 
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
