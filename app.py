@@ -3,9 +3,13 @@
 跑法： streamlit run app.py --server.headless true
 """
 
+import hashlib
+import html
 import json
+import os
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import quote
 
 import folium
@@ -22,10 +26,34 @@ DAY_COLORS = {
     7: "orange", 8: "orange", 9: "cadetblue",
 }
 
+# High-saturation marker colors for the Google Maps pin path — picked to stay
+# readable against Google's own colorful basemap (parks/water/POI icons),
+# which washed out the original folium-matched muted tones (cadetblue, etc.).
+_DAY_COLOR_HEX = {"cadetblue": "#1565C0", "orange": "#E65100"}
+_CANDIDATE_COLOR_HEX = "#616161"
+_SUGGESTION_COLOR_HEX = "#8E24AA"
+
+# 80% of Maps Platform's Essentials-tier free allowance (10,000 map loads/month).
+# Above this, render_map() falls back to the free OpenStreetMap/folium map instead
+# of initializing Google Maps JS, so we never actually reach Google's billed tier.
+GOOGLE_SOFT_CAP = 8000
+
+# Requires [server] enableStaticServing = true in .streamlit/config.toml.
+_STATIC_DIR = Path(__file__).parent / "static"
+
 st.set_page_config(page_title="2027 東京家族旅遊", page_icon="🗾", layout="wide")
 
 if "voter_name" not in st.session_state:
     st.session_state.voter_name = ""
+
+
+def _google_maps_api_key() -> str:
+    try:
+        if "GOOGLE_MAPS_API_KEY" in st.secrets:
+            return st.secrets["GOOGLE_MAPS_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
 
 def geocode_place(place_name: str):
@@ -207,20 +235,149 @@ def _build_folium_map(picked_regions: list[str], suggestions: list[dict]) -> fol
     return m
 
 
+def _build_google_map_html(picked_regions: list[str], suggestions: list[dict], api_key: str) -> str:
+    """Google Maps JS equivalent of _build_folium_map(), same data/filtering rules.
+    Marker colors are drawn with google.maps.SymbolPath.CIRCLE (exact hex fill)
+    instead of relying on any external icon URL. All user-submitted text (wish
+    suggestions) is HTML-escaped before being embedded in an InfoWindow, since
+    that content renders as innerHTML in the browser."""
+    markers = []
+
+    for spot in SPOTS:
+        color = _DAY_COLOR_HEX.get(DAY_COLORS.get(spot["day"], "orange"), "#808080")
+        markers.append(
+            {
+                "lat": spot["lat"],
+                "lng": spot["lon"],
+                "info": f"<b>{html.escape(spot['name'])}</b><br>Day {spot['day']}・{html.escape(spot['category'])}",
+                "color": color,
+            }
+        )
+
+    for cand in CANDIDATE_SPOTS:
+        markers.append(
+            {
+                "lat": cand["lat"],
+                "lng": cand["lon"],
+                "info": f"<b>{html.escape(cand['name'])}</b><br>{html.escape(cand['note'])}",
+                "color": _CANDIDATE_COLOR_HEX,
+            }
+        )
+
+    if picked_regions:
+        for cand in ATTRACTION_CANDIDATES:
+            if cand["area"] not in picked_regions or cand["lat"] is None:
+                continue
+            if cand.get("scheduled_day"):
+                continue  # already shown via SPOTS with its day color
+            markers.append(
+                {
+                    "lat": cand["lat"],
+                    "lng": cand["lon"],
+                    "info": f"<b>{html.escape(cand['name'])}</b><br>{html.escape(cand['area'])}・尚未排入行程",
+                    "color": _CANDIDATE_COLOR_HEX,
+                }
+            )
+
+    for row in suggestions:
+        lat, lon = row.get("緯度"), row.get("經度")
+        if lat is None or lon is None:
+            continue
+        place = html.escape(str(row.get("地點", "")))
+        submitter = html.escape(str(row.get("提交人", "")))
+        note = html.escape(str(row.get("備註", "") or ""))
+        markers.append(
+            {
+                "lat": lat,
+                "lng": lon,
+                "info": f"<b>{place}</b><br>{submitter} 許願<br>{note}",
+                "color": _SUGGESTION_COLOR_HEX,
+            }
+        )
+
+    markers_json = json.dumps(markers, ensure_ascii=False)
+    safe_api_key = html.escape(api_key, quote=True)
+
+    return f"""
+<div id="google_map" style="width:100%;height:600px;"></div>
+<script>
+  function initMap() {{
+    const map = new google.maps.Map(document.getElementById("google_map"), {{
+      center: {{lat: 35.68, lng: 139.55}},
+      zoom: 9,
+    }});
+    const infoWindow = new google.maps.InfoWindow();
+    const markers = {markers_json};
+    // Material "place" pin outline (24x24 viewBox), tip anchored at the exact
+    // coordinate. A teardrop pin reads much better against Google's own
+    // colorful basemap than a flat dot, and matches what people expect from
+    // map pins generally.
+    const PIN_PATH =
+      "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z";
+    markers.forEach(function (m) {{
+      const marker = new google.maps.Marker({{
+        position: {{lat: m.lat, lng: m.lng}},
+        map: map,
+        icon: {{
+          path: PIN_PATH,
+          fillColor: m.color,
+          fillOpacity: 1,
+          scale: 1.8,
+          strokeWeight: 1.5,
+          strokeColor: "#ffffff",
+          anchor: new google.maps.Point(12, 22),
+        }},
+      }});
+      marker.addListener("click", function () {{
+        infoWindow.setContent(m.info);
+        infoWindow.open(map, marker);
+      }});
+    }});
+  }}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={safe_api_key}&callback=initMap&loading=async" async defer></script>
+"""
+
+
+def _write_google_map_static(html_content: str) -> str:
+    """Writes the map HTML to a real file under static/ (Streamlit's static file
+    serving) and returns its relative URL, instead of embedding the HTML string
+    directly via iframe srcdoc. Google's HTTP-referrer key restriction needs a
+    real page URL to check against — an srcdoc iframe reports "about:srcdoc" as
+    its origin, which the restriction can never match, so the API key would
+    have to go unrestricted to work at all. Filename is a content hash so
+    identical map states (e.g. the same picked_regions filter picked by two
+    different family members) reuse one file instead of colliding or piling up."""
+    _STATIC_DIR.mkdir(exist_ok=True)
+    digest = hashlib.md5(html_content.encode("utf-8")).hexdigest()[:12]
+    filename = f"map_{digest}.html"
+    path = _STATIC_DIR / filename
+    if not path.exists():
+        path.write_text(html_content, encoding="utf-8")
+    return f"/app/static/{filename}"
+
+
 def render_map() -> None:
-    """Map tab body. State-gated: only rebuilds the folium.Map object (and bumps
-    the debug render counter) when picked_regions or the gist suggestions data
-    actually changed since the last render this session — an unrelated rerun
-    (e.g. a vote click in another tab, since st.tabs() re-executes every tab's
-    body on every rerun) reuses the cached map object instead of rebuilding it.
+    """Map tab body. Uses Google Maps JS when GOOGLE_MAPS_API_KEY is configured
+    and this month's usage (tracked via gist_store's maplog counter) is under
+    GOOGLE_SOFT_CAP; otherwise falls back to the free OpenStreetMap/folium map,
+    so a map is always shown either way.
+
+    State-gated: only rebuilds the map object (and bumps the debug render
+    counter / gist_store.bump_maplog() for the Google path) when picked_regions,
+    the gist suggestions data, or the active mode actually changed since the
+    last render this session — an unrelated rerun (e.g. a vote click in another
+    tab, since st.tabs() re-executes every tab's body on every rerun) reuses the
+    cached map object instead of rebuilding it.
 
     Caveat: st_folium is a proper declared Streamlit component with its own
-    remount semantics. A future Google Maps JS embed will likely use
-    st.components.v1.html(...) instead, which behaves differently — this
-    state-gating pattern transfers, but whether it actually prevents extra
-    Google "map load" billing events can only be confirmed once that real
-    embed exists, via a browser DevTools Network-tab check (see project memory
-    notes on the Google Maps migration for the full verification plan)."""
+    remount semantics, while the Google path uses st.iframe(...) with a raw
+    HTML string, which behaves differently. This state-gating pattern narrows
+    the risk, but
+    whether it actually prevents extra Google "map load" billing events on
+    every unrelated rerun can only be confirmed via a real browser DevTools
+    Network-tab check (see project memory notes on the Google Maps migration
+    for the full verification plan)."""
     st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，紫色＝許願池地點")
 
     candidate_regions = sorted(
@@ -237,21 +394,44 @@ def render_map() -> None:
     suggestions = gist_store.load_suggestions()
     signature = (tuple(sorted(picked_regions)), _suggestions_fingerprint(suggestions))
 
-    if st.session_state.get("_map_signature") != signature or "_map_obj" not in st.session_state:
-        st.session_state["_map_obj"] = _build_folium_map(picked_regions, suggestions)
+    api_key = _google_maps_api_key()
+    maplog = gist_store.load_maplog()
+    current_month = datetime.now().strftime("%Y-%m")
+    count_this_month = maplog["count"] if maplog.get("month") == current_month else 0
+    use_google = bool(api_key) and count_this_month < GOOGLE_SOFT_CAP
+    mode = "google" if use_google else "folium"
+
+    needs_rebuild = (
+        st.session_state.get("_map_signature") != signature
+        or st.session_state.get("_map_mode") != mode
+        or "_map_obj" not in st.session_state
+    )
+    if needs_rebuild:
+        if use_google:
+            html_content = _build_google_map_html(picked_regions, suggestions, api_key)
+            st.session_state["_map_obj"] = _write_google_map_static(html_content)
+            gist_store.bump_maplog()
+        else:
+            st.session_state["_map_obj"] = _build_folium_map(picked_regions, suggestions)
         st.session_state["_map_signature"] = signature
+        st.session_state["_map_mode"] = mode
         st.session_state["_map_render_count"] = st.session_state.get("_map_render_count", 0) + 1
 
-    st_folium(
-        st.session_state["_map_obj"],
-        use_container_width=True,
-        height=600,
-        returned_objects=[],
-        key="tokyo_map",
-    )
+    if mode == "google":
+        st.iframe(st.session_state["_map_obj"], height=600)
+    else:
+        st_folium(
+            st.session_state["_map_obj"],
+            use_container_width=True,
+            height=600,
+            returned_objects=[],
+            key="tokyo_map",
+        )
+        if api_key and count_this_month >= GOOGLE_SOFT_CAP:
+            st.caption("⚠️ 本月Google地圖用量已達軟上限，暫時顯示備用版OpenStreetMap地圖")
 
     if st.query_params.get("debug") == "1":
-        st.caption(f"debug: map (re)built {st.session_state['_map_render_count']}x this session")
+        st.caption(f"debug: map (re)built {st.session_state['_map_render_count']}x this session (mode={mode})")
 
     st.markdown("### 官方地鐵路線圖")
     st.caption("資訊較多，適合要查確切站名/轉乘方式時再點開")
