@@ -180,7 +180,17 @@ with tab_itinerary:
                 st.markdown(f"- {item}")
 
 with tab_map:
-    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），紫色＝許願池地點")
+    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，紫色＝許願池地點")
+
+    candidate_regions = sorted(
+        {c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None},
+        key=lambda a: [c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None].index(a),
+    )
+    picked_regions = st.multiselect(
+        "要在地圖上加顯示哪些地區的候選景點？（還沒排進行程的，灰色標記）",
+        candidate_regions,
+        default=[],
+    )
 
     m = folium.Map(location=[35.68, 139.55], zoom_start=9, tiles="OpenStreetMap")
 
@@ -199,6 +209,19 @@ with tab_map:
             tooltip=f"{cand['name']}（候選）",
             icon=folium.Icon(color="lightgray", icon="question-sign"),
         ).add_to(m)
+
+    if picked_regions:
+        for cand in ATTRACTION_CANDIDATES:
+            if cand["area"] not in picked_regions or cand["lat"] is None:
+                continue
+            if cand.get("scheduled_day"):
+                continue  # already shown via SPOTS with its day color
+            folium.Marker(
+                location=[cand["lat"], cand["lon"]],
+                popup=folium.Popup(f"<b>{cand['name']}</b><br>{cand['area']}・尚未排入行程", max_width=260),
+                tooltip=f"{cand['name']}（候選）",
+                icon=folium.Icon(color="lightgray", icon="question-sign"),
+            ).add_to(m)
 
     suggestions_df = pd.DataFrame(gist_store.load_suggestions())
     if not suggestions_df.empty and "緯度" in suggestions_df.columns:
