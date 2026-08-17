@@ -90,8 +90,11 @@ def render_vote_section(candidates: list[dict], item_type: str, voter: str):
 
     areas = sorted({c["area"] for c in candidates}, key=lambda a: [c["area"] for c in candidates].index(a))
     for area in areas:
-        with st.expander(f"**{area}**", expanded=False):
-            for cand in [c for c in candidates if c["area"] == area]:
+        area_items = [c for c in candidates if c["area"] == area]
+        area_votes = sum(counts.get(c["id"], 0) for c in area_items)
+        badge = f"　🗳️ {area_votes}票" if area_votes else ""
+        with st.expander(f"**{area}**{badge}", expanded=False):
+            for cand in area_items:
                 col1, col2 = st.columns([4, 2])
                 search_url = f"https://www.google.com/search?q={quote(cand['name'])}"
                 with col1:
@@ -115,7 +118,12 @@ def render_food_vote_section(candidates: list[dict], voter: str):
         counts[v["item_id"]] += 1
 
     regions = sorted({c["region"] for c in candidates}, key=lambda r: [c["region"] for c in candidates].index(r))
-    region = st.radio("選地區", regions, horizontal=True, key="food_region")
+
+    def _region_label(r):
+        total = sum(counts.get(c["id"], 0) for c in candidates if c["region"] == r)
+        return f"{r}　🗳️{total}" if total else r
+
+    region = st.radio("選地區（🗳️旁邊數字是這區目前總票數）", regions, horizontal=True, key="food_region", format_func=_region_label)
 
     region_items = [c for c in candidates if c["region"] == region]
     categories = sorted(
@@ -123,7 +131,9 @@ def render_food_vote_section(candidates: list[dict], voter: str):
     )
     for category in categories:
         cat_items = [c for c in region_items if c["category"] == category]
-        with st.expander(f"**{category}**（{len(cat_items)}家）", expanded=False):
+        cat_votes = sum(counts.get(c["id"], 0) for c in cat_items)
+        badge = f"　🗳️ {cat_votes}票" if cat_votes else ""
+        with st.expander(f"**{category}**（{len(cat_items)}家）{badge}", expanded=False):
             for cand in cat_items:
                 col1, col2 = st.columns([4, 2])
                 with col1:

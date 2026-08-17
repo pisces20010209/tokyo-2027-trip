@@ -41,12 +41,20 @@ def _headers() -> dict:
     return {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
 
 
+@st.cache_data(ttl=8, show_spinner=False)
+def _load_gist_files() -> dict:
+    """Single cached fetch of the whole gist (all files at once), refreshed every 8s
+    or immediately after any write via _save()'s cache.clear() call. This avoids
+    hitting the GitHub API on every widget rerun (expander open/close etc.)."""
+    resp = requests.get(API_URL, headers=_headers(), timeout=10)
+    resp.raise_for_status()
+    return resp.json()["files"]
+
+
 def _load(key: str, default):
     filename = FILES[key]
     try:
-        resp = requests.get(API_URL, headers=_headers(), timeout=10)
-        resp.raise_for_status()
-        files = resp.json()["files"]
+        files = _load_gist_files()
         if filename not in files:
             return default
         content = files[filename]["content"]
@@ -66,6 +74,7 @@ def _save(key: str, data) -> bool:
             timeout=10,
         )
         resp.raise_for_status()
+        _load_gist_files.clear()
         return True
     except Exception as exc:  # noqa: BLE001
         st.error(f"儲存失敗，請稍後再試（{exc}）")
