@@ -176,7 +176,7 @@ SPOTS = [
     {"name": "西湖療癒之里根場", "day": 2, "category": "景點", "lat": 35.5145, "lon": 138.6825},  # 估計值，OSM無收錄
     {"name": "十里木高原展望台", "day": 3, "category": "景點", "lat": 35.2604, "lon": 138.8141},
     {"name": "富士サファリパーク", "day": 3, "category": "景點", "lat": 35.2602, "lon": 138.8062},
-    {"name": "MONday Apart Premium 上野御徒町（住宿）", "day": 3, "category": "住宿", "lat": 35.7054, "lon": 139.7733},
+    {"name": "MONday Apart Premium 上野御徒町（住宿）", "day": 3, "category": "住宿", "lat": 35.7070, "lon": 139.7746},  # 御徒町駅座標，飯店本體OSM無收錄，官網寫南口徒歩3分
     {"name": "豪德寺", "day": 4, "category": "景點", "lat": 35.6428, "lon": 139.6497},
     {"name": "新宿站", "day": 4, "category": "交通", "lat": 35.6896, "lon": 139.7006},
     {"name": "秋葉原", "day": 4, "category": "景點", "lat": 35.6984, "lon": 139.7731},
