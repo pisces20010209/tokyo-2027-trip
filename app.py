@@ -30,6 +30,7 @@ DAY_COLORS = {
 _DAY_COLOR_HEX = {"cadetblue": "#1565C0", "orange": "#E65100"}
 _CANDIDATE_COLOR_HEX = "#616161"
 _SUGGESTION_COLOR_HEX = "#8E24AA"
+_FOOD_COLOR_HEX = "#2E7D32"
 
 # 80% of Maps Platform's Essentials-tier free allowance (10,000 map loads/month).
 # Above this, render_map() falls back to the free OpenStreetMap/folium map instead
@@ -180,7 +181,7 @@ def _suggestions_fingerprint(suggestions: list[dict]) -> int:
     return hash(json.dumps(suggestions, sort_keys=True, ensure_ascii=False))
 
 
-def _build_folium_map(picked_regions: list[str], suggestions: list[dict]) -> folium.Map:
+def _build_folium_map(picked_regions: list[str], picked_food_regions: list[str], suggestions: list[dict]) -> folium.Map:
     """Pure builder, no Streamlit calls inside. This is the one function a future
     Google Maps swap-in replaces/wraps; render_map() controls when it gets called."""
     m = folium.Map(location=[35.68, 139.55], zoom_start=9, tiles="OpenStreetMap")
@@ -214,6 +215,17 @@ def _build_folium_map(picked_regions: list[str], suggestions: list[dict]) -> fol
                 icon=folium.Icon(color="lightgray", icon="question-sign"),
             ).add_to(m)
 
+    if picked_food_regions:
+        for food in FOOD_CANDIDATES:
+            if food["region"] not in picked_food_regions or food["lat"] is None:
+                continue
+            folium.Marker(
+                location=[food["lat"], food["lon"]],
+                popup=folium.Popup(f"<b>{food['name']}</b><br>{food['category']}・{food['location']}", max_width=260),
+                tooltip=f"🍜 {food['name']}",
+                icon=folium.Icon(color="green", icon="cutlery"),
+            ).add_to(m)
+
     suggestions_df = pd.DataFrame(suggestions)
     if not suggestions_df.empty and "緯度" in suggestions_df.columns:
         valid_suggestions = suggestions_df.dropna(subset=["緯度", "經度"])
@@ -230,7 +242,9 @@ def _build_folium_map(picked_regions: list[str], suggestions: list[dict]) -> fol
     return m
 
 
-def _build_google_map_html(picked_regions: list[str], suggestions: list[dict], api_key: str) -> str:
+def _build_google_map_html(
+    picked_regions: list[str], picked_food_regions: list[str], suggestions: list[dict], api_key: str
+) -> str:
     """Google Maps JS equivalent of _build_folium_map(), same data/filtering rules.
     Marker colors are drawn with google.maps.SymbolPath.CIRCLE (exact hex fill)
     instead of relying on any external icon URL. All user-submitted text (wish
@@ -271,6 +285,19 @@ def _build_google_map_html(picked_regions: list[str], suggestions: list[dict], a
                     "lng": cand["lon"],
                     "info": f"<b>{html.escape(cand['name'])}</b><br>{html.escape(cand['area'])}・尚未排入行程",
                     "color": _CANDIDATE_COLOR_HEX,
+                }
+            )
+
+    if picked_food_regions:
+        for food in FOOD_CANDIDATES:
+            if food["region"] not in picked_food_regions or food["lat"] is None:
+                continue
+            markers.append(
+                {
+                    "lat": food["lat"],
+                    "lng": food["lon"],
+                    "info": f"<b>{html.escape(food['name'])}</b><br>{html.escape(food['category'])}・{html.escape(food['location'])}",
+                    "color": _FOOD_COLOR_HEX,
                 }
             )
 
@@ -355,7 +382,10 @@ def render_map() -> None:
     every unrelated rerun can only be confirmed via a real browser DevTools
     Network-tab check (see project memory notes on the Google Maps migration
     for the full verification plan)."""
-    st.markdown("藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，紫色＝許願池地點")
+    st.markdown(
+        "藍色＝富士山/河口湖區（Day1–3），橘色＝東京都心（Day4–8），灰色＝還沒排進行程的候選景點，"
+        "綠色＝美食候選，紫色＝許願池地點"
+    )
 
     candidate_regions = sorted(
         {c["area"] for c in ATTRACTION_CANDIDATES if c["lat"] is not None},
@@ -368,8 +398,23 @@ def render_map() -> None:
         key="map_picked_regions",
     )
 
+    food_regions = sorted(
+        {c["region"] for c in FOOD_CANDIDATES if c["lat"] is not None},
+        key=lambda r: [c["region"] for c in FOOD_CANDIDATES if c["lat"] is not None].index(r),
+    )
+    picked_food_regions = st.multiselect(
+        "要在地圖上加顯示哪些地區的美食候選？（綠色標記，找得到座標的店家才會顯示）",
+        food_regions,
+        default=[],
+        key="map_picked_food_regions",
+    )
+
     suggestions = gist_store.load_suggestions()
-    signature = (tuple(sorted(picked_regions)), _suggestions_fingerprint(suggestions))
+    signature = (
+        tuple(sorted(picked_regions)),
+        tuple(sorted(picked_food_regions)),
+        _suggestions_fingerprint(suggestions),
+    )
 
     api_key = _google_maps_api_key()
     maplog = gist_store.load_maplog()
@@ -385,10 +430,12 @@ def render_map() -> None:
     )
     if needs_rebuild:
         if use_google:
-            st.session_state["_map_obj"] = _build_google_map_html(picked_regions, suggestions, api_key)
+            st.session_state["_map_obj"] = _build_google_map_html(
+                picked_regions, picked_food_regions, suggestions, api_key
+            )
             gist_store.bump_maplog()
         else:
-            st.session_state["_map_obj"] = _build_folium_map(picked_regions, suggestions)
+            st.session_state["_map_obj"] = _build_folium_map(picked_regions, picked_food_regions, suggestions)
         st.session_state["_map_signature"] = signature
         st.session_state["_map_mode"] = mode
         st.session_state["_map_render_count"] = st.session_state.get("_map_render_count", 0) + 1
