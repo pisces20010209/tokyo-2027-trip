@@ -861,8 +861,14 @@ FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 #
 # category:
 #   "ticket_dated"   — 有確切開賣日期／時間，時間到了要準時上線搶，依 date_sort 排序
-#   "ticket_undated" — 需要買票/預約但沒有固定截止日期，隨時可辦
+#   "ticket_pattern" — 官方還沒公布確切開賣日，但查得到參考模式可以推算「大概什麼時候回來查」
+#   "ticket_reminder"— 查不到官方公告的開賣規則，只能提醒自己定期查看（不是確定日期）
+#   "ticket_anytime" — 沒有日期限制，隨時能買不用搶
 #   "general"        — 非搶票類的一般事務
+#
+# 2026-08-23：拿掉紅鶴鬆餅整理券、合羽橋vs水上巴士二選一（不是真的要追蹤的待辦，
+# 內容已經寫在itinerary.md Day5行程/候選清單裡）；和服體驗/忍者體驗同理拿掉
+# （內容已在Day5行程items裡），不再重複列成待辦。
 TODOS = [
     # -- 有確切日期，依開賣時間排序 --
     {"id": "t18", "text": "GALA湯澤 JR SKISKI套票公布（Day8）——2026/9–10月（尚未公布確切日），屆時查jre-travel.com/seasonal/ski/gala/；查不到也能現場分開買", "default_done": False, "category": "ticket_dated", "date_sort": "2026-09-15"},
@@ -870,11 +876,13 @@ TODOS = [
     {"id": "t16", "text": "富士野生動物園巴士線上預約（Day3）——2026/12/1（二）中午12:00 開放預約2027年1月份，只佔約10%名額要準時搶：https://www.fujisafari.co.jp/membership/", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-01"},
     {"id": "t17", "text": "小田急浪漫特急箱根當天座位預約（Day4）——2026/12/24 10:00開賣；想搶展望席要當下臨場看e-Romancecar哪班有展望席，不要卡死09:10", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-24"},
     {"id": "t12", "text": "Shibuya Sky 訂票（Day7,1/27）——2026/12/30 00:00 開賣，記得那天搶票", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-30"},
-    # -- 沒有固定截止日期 --
-    {"id": "t09", "text": "teamLab Planets TOKYO 門票預訂（Day7）——官方無固定倒數公告，建議出發前約1個月起密切查看", "default_done": False, "category": "ticket_undated"},
-    {"id": "t10", "text": "アキバフクロウ 貓頭鷹咖啡廳線上預約（Day5）——官方是滾動式行事曆，建議出發前1–2個月起密切查看", "default_done": False, "category": "ticket_undated"},
-    {"id": "t15", "text": "箱根フリーパス購買（Day4）——新宿發2日券，大人¥7,100/小學生¥1,600，不會賣完不用搶，出發前現場或EMot App先買數位版都可以", "default_done": False, "category": "ticket_undated"},
-    {"id": "t13", "text": "和服體驗／忍者體驗 決定要不要去、訂位（Day5，不限只選一個，看大家意願）", "default_done": False, "category": "ticket_undated"},
+    # -- 官方沒公布，但有參考模式可推算 --
+    {"id": "t08", "text": "豐洲市場當週公休日確認（Day7，1/27週三）——2027年公休日曆表官方還沒公布；2026年的曆表是2025年9月公布的(有明確新聞稿日期)，照慣例推算2027年的大概2026年9月左右公布，屆時查 shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket_pattern"},
+    # -- 查不到官方規則，只能提醒自己定期查看 --
+    {"id": "t09", "text": "teamLab Planets TOKYO 門票預訂（Day7）——查不到官方公告的販售規則，建議從2026年11月左右開始定期上官網(teamlabplanets.dmm.com)查看", "default_done": False, "category": "ticket_reminder"},
+    {"id": "t10", "text": "アキバフクロウ 貓頭鷹咖啡廳線上預約（Day5）——查不到官方公告的開放範圍規則，建議從2026年11月左右開始定期上官網(akiba2960.com)查看", "default_done": False, "category": "ticket_reminder"},
+    # -- 沒有日期限制 --
+    {"id": "t15", "text": "箱根フリーパス購買（Day4）——新宿發2日券，大人¥7,100/小學生¥1,600，不會賣完，隨時買都可以，出發前用EMot App先買數位版也行", "default_done": False, "category": "ticket_anytime"},
     # -- 一般事務 --
     {"id": "t00", "text": "日本包車確認（1/22–1/23）——已訂美好假期，尾款¥255,000記得1/21帶現金給司機", "default_done": True, "category": "general"},
     {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團，需各約一組）", "default_done": False, "category": "general"},
@@ -883,7 +891,4 @@ TODOS = [
     {"id": "t04", "text": "VJW 填寫資料", "default_done": False, "category": "general"},
     {"id": "t06", "text": "西瓜卡辦理", "default_done": False, "category": "general"},
     {"id": "t07", "text": "行李箱確認", "default_done": False, "category": "general"},
-    {"id": "t08", "text": "豐洲市場當週公休日確認（Day7，1/27當週）", "default_done": False, "category": "general"},
-    {"id": "t11", "text": "紅鶴舒芙蕾鬆餅是否早起排整理券（與Day5晚出發衝突）", "default_done": False, "category": "general"},
-    {"id": "t14", "text": "合羽橋道具街 vs 隅田川水上巴士 二選一（Day5）", "default_done": False, "category": "general"},
 ]

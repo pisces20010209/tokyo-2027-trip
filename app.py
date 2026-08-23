@@ -582,14 +582,20 @@ with tab_todo:
         (t for t in TODOS if t["category"] == "ticket_dated"),
         key=lambda t: t["date_sort"],
     )
-    ticket_undated = [t for t in TODOS if t["category"] == "ticket_undated"]
+    ticket_pattern = [t for t in TODOS if t["category"] == "ticket_pattern"]
+    ticket_reminder = [t for t in TODOS if t["category"] == "ticket_reminder"]
+    ticket_anytime = [t for t in TODOS if t["category"] == "ticket_anytime"]
     general = [t for t in TODOS if t["category"] == "general"]
 
     st.markdown("### 🎫 需要提前搶票／預約")
     st.markdown("#### 有確切日期／時間，時間到了要準時上線搶")
     _render_todo_group(ticket_dated)
-    st.markdown("#### 沒有固定截止日期，隨時可辦、越早處理越保險")
-    _render_todo_group(ticket_undated)
+    st.markdown("#### 官方還沒公布確切開賣日，但查得到參考模式可以推算「大概什麼時候回來查」")
+    _render_todo_group(ticket_pattern)
+    st.markdown("#### 查不到官方公告的開賣規則，只能提醒自己定期查看（不是確定日期）")
+    _render_todo_group(ticket_reminder)
+    st.markdown("#### 沒有日期限制，隨時能買不用搶")
+    _render_todo_group(ticket_anytime)
 
     st.markdown("### ✅ 待辦清單（非搶票類，一般事務）")
     _render_todo_group(general)
