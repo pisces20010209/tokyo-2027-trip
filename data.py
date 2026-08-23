@@ -866,16 +866,18 @@ ATTRACTION_CANDIDATES = _build_candidates("a", _ATTRACTION_GROUPS)
 FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 
 # 待辦清單，同步自 ../itinerary.md。category只分兩種："ticket"(依date_sort排序)／"general"。
+# url欄位是每個搶票項目的官方購票/查詢頁面，app.py會把它渲染成獨立的可點擊連結
+# （不能塞進checkbox的label裡，checkbox label點下去只會觸發打勾，不會連出去）。
 TODOS = [
-    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢（Day7）。連結：shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
-    {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布（Day8）。連結：jre-travel.com/seasonal/ski/gala/", "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
-    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買（Day7）。連結：teamlabplanets.dmm.com", "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
-    {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約（Day5）。連結：akiba2960.com", "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
-    {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次（Day6）", "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
-    {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放（Day3）。連結：fujisafari.co.jp/membership/", "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
-    {"id": "t17", "text": "2026/12/24 10:00 - 小田急浪漫特急箱根座位開賣（Day4），想要展望席要當場挑有展望席的班次", "default_done": False, "category": "ticket", "date_sort": "2026-12-24"},
-    {"id": "t12", "text": "2026/12/30 00:00 - Shibuya Sky開賣1/27場次（Day7）", "default_done": False, "category": "ticket", "date_sort": "2026-12-30"},
-    {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day4），大人¥7,100/小學生¥1,600", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
+    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢（Day7）", "url": "https://www.shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
+    {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布（Day8）", "url": "https://www.jre-travel.com/seasonal/ski/gala/", "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
+    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買（Day7）", "url": "https://teamlabplanets.dmm.com/", "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
+    {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約（Day5）", "url": "https://akiba2960.com/jp/reservation/", "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
+    {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次（Day6）", "url": "https://www.tokyodisneyresort.jp/ticket/purchase.html", "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
+    {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放（Day3）", "url": "https://www.fujisafari.co.jp/membership/", "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
+    {"id": "t17", "text": "2026/12/24 10:00 - 小田急浪漫特急箱根座位開賣（Day4），想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "default_done": False, "category": "ticket", "date_sort": "2026-12-24"},
+    {"id": "t12", "text": "2026/12/30 00:00 - Shibuya Sky開賣1/27場次（Day7）", "url": "https://www.shibuya-scramble-square.com/sky/ticket/", "default_done": False, "category": "ticket", "date_sort": "2026-12-30"},
+    {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day4），大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
     # -- 一般事務 --
     {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團，需各約一組）", "default_done": False, "category": "general"},
     {"id": "t02", "text": "旅平險投保", "default_done": False, "category": "general"},

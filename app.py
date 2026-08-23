@@ -585,6 +585,8 @@ with tab_todo:
         for item in items:
             current = todo_state.get(item["id"], item["default_done"])
             checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
+            if item.get("url"):
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔗 [{item['url']}]({item['url']})")
             if checked != current:
                 todo_state[item["id"]] = checked
                 changed = True
