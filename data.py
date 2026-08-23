@@ -24,6 +24,14 @@ HOTELS = [
     },
 ]
 
+TRANSPORT = [
+    {"date": "1/21", "text": "美好假期接機"},
+    {"date": "1/22–1/23", "text": "美好假期包車"},
+    {"date": "1/26", "text": "美好假期迪士尼接送"},
+    {"date": "1/29", "text": "美好假期送機"},
+]
+TRANSPORT_NOTE = "訂金已付，尾款第一天（1/21）用車交給司機"
+
 DAYS = [
     {
         "day": 1,
@@ -857,34 +865,18 @@ FOOD_REGIONS = {
 ATTRACTION_CANDIDATES = _build_candidates("a", _ATTRACTION_GROUPS)
 FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 
-# 待辦清單，同步自 ../itinerary.md 的「需要提前搶票／預約」+「待辦清單」章節。
-#
-# category:
-#   "ticket_dated"   — 有確切開賣日期／時間，時間到了要準時上線搶，依 date_sort 排序
-#   "ticket_pattern" — 官方還沒公布確切開賣日，但查得到參考模式可以推算「大概什麼時候回來查」
-#   "ticket_reminder"— 查不到官方公告的開賣規則，只能提醒自己定期查看（不是確定日期）
-#   "ticket_anytime" — 沒有日期限制，隨時能買不用搶
-#   "general"        — 非搶票類的一般事務
-#
-# 2026-08-23：拿掉紅鶴鬆餅整理券、合羽橋vs水上巴士二選一（不是真的要追蹤的待辦，
-# 內容已經寫在itinerary.md Day5行程/候選清單裡）；和服體驗/忍者體驗同理拿掉
-# （內容已在Day5行程items裡），不再重複列成待辦。
+# 待辦清單，同步自 ../itinerary.md。category只分兩種："ticket"(依date_sort排序)／"general"。
 TODOS = [
-    # -- 有確切日期，依開賣時間排序 --
-    {"id": "t18", "text": "GALA湯澤 JR SKISKI套票公布（Day8）——2026/9–10月（尚未公布確切日），屆時查jre-travel.com/seasonal/ski/gala/；查不到也能現場分開買", "default_done": False, "category": "ticket_dated", "date_sort": "2026-09-15"},
-    {"id": "t05", "text": "迪士尼門票購買——2026/11/26 14:00 開賣1/26場次（Day6）", "default_done": False, "category": "ticket_dated", "date_sort": "2026-11-26"},
-    {"id": "t16", "text": "富士野生動物園巴士線上預約（Day3）——2026/12/1（二）中午12:00 開放預約2027年1月份，只佔約10%名額要準時搶：https://www.fujisafari.co.jp/membership/", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-01"},
-    {"id": "t17", "text": "小田急浪漫特急箱根當天座位預約（Day4）——2026/12/24 10:00開賣；想搶展望席要當下臨場看e-Romancecar哪班有展望席，不要卡死09:10", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-24"},
-    {"id": "t12", "text": "Shibuya Sky 訂票（Day7,1/27）——2026/12/30 00:00 開賣，記得那天搶票", "default_done": False, "category": "ticket_dated", "date_sort": "2026-12-30"},
-    # -- 官方沒公布，但有參考模式可推算 --
-    {"id": "t08", "text": "豐洲市場當週公休日確認（Day7，1/27週三）——2027年公休日曆表官方還沒公布；2026年的曆表是2025年9月公布的(有明確新聞稿日期)，照慣例推算2027年的大概2026年9月左右公布，屆時查 shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket_pattern"},
-    # -- 查不到官方規則，只能提醒自己定期查看 --
-    {"id": "t09", "text": "teamLab Planets TOKYO 門票預訂（Day7）——查不到官方公告的販售規則，建議從2026年11月左右開始定期上官網(teamlabplanets.dmm.com)查看", "default_done": False, "category": "ticket_reminder"},
-    {"id": "t10", "text": "アキバフクロウ 貓頭鷹咖啡廳線上預約（Day5）——查不到官方公告的開放範圍規則，建議從2026年11月左右開始定期上官網(akiba2960.com)查看", "default_done": False, "category": "ticket_reminder"},
-    # -- 沒有日期限制 --
-    {"id": "t15", "text": "箱根フリーパス購買（Day4）——新宿發2日券，大人¥7,100/小學生¥1,600，不會賣完，隨時買都可以，出發前用EMot App先買數位版也行", "default_done": False, "category": "ticket_anytime"},
+    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢（Day7）。連結：shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
+    {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布（Day8）。連結：jre-travel.com/seasonal/ski/gala/", "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
+    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買（Day7）。連結：teamlabplanets.dmm.com", "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
+    {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約（Day5）。連結：akiba2960.com", "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
+    {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次（Day6）", "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
+    {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放（Day3）。連結：fujisafari.co.jp/membership/", "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
+    {"id": "t17", "text": "2026/12/24 10:00 - 小田急浪漫特急箱根座位開賣（Day4），想要展望席要當場挑有展望席的班次", "default_done": False, "category": "ticket", "date_sort": "2026-12-24"},
+    {"id": "t12", "text": "2026/12/30 00:00 - Shibuya Sky開賣1/27場次（Day7）", "default_done": False, "category": "ticket", "date_sort": "2026-12-30"},
+    {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day4），大人¥7,100/小學生¥1,600", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
     # -- 一般事務 --
-    {"id": "t00", "text": "日本包車確認（1/22–1/23）——已訂美好假期，尾款¥255,000記得1/21帶現金給司機", "default_done": True, "category": "general"},
     {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團，需各約一組）", "default_done": False, "category": "general"},
     {"id": "t02", "text": "旅平險投保", "default_done": False, "category": "general"},
     {"id": "t03", "text": "eSIM 購買", "default_done": False, "category": "general"},

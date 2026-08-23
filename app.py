@@ -16,7 +16,18 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 import gist_store
-from data import ATTRACTION_CANDIDATES, CANDIDATE_SPOTS, DAYS, FLIGHTS, FOOD_CANDIDATES, HOTELS, SPOTS, TODOS
+from data import (
+    ATTRACTION_CANDIDATES,
+    CANDIDATE_SPOTS,
+    DAYS,
+    FLIGHTS,
+    FOOD_CANDIDATES,
+    HOTELS,
+    SPOTS,
+    TODOS,
+    TRANSPORT,
+    TRANSPORT_NOTE,
+)
 
 DAY_COLORS = {
     1: "cadetblue", 2: "cadetblue", 3: "cadetblue",
@@ -484,13 +495,13 @@ with tab_itinerary:
                 f"　　📍{h['address']}　☎️{h['phone']}"
             )
 
+        st.markdown("#### 🚗 日本交通")
+        for t in TRANSPORT:
+            st.markdown(f"- **{t['date']}**　{t['text']}")
+        st.caption(TRANSPORT_NOTE)
+
     for d in DAYS:
-        with st.container(border=True):
-            head_col1, head_col2 = st.columns([5, 1])
-            with head_col1:
-                st.subheader(f"Day {d['day']}・{d['date']}　{d['title']}")
-            with head_col2:
-                st.markdown(f"**{d['status']}**")
+        with st.expander(f"Day {d['day']}・{d['date']}　{d['title']}　{d['status']}", expanded=False):
             if d.get("transit"):
                 st.info(d["transit"])
             for item in d["items"]:
@@ -578,26 +589,16 @@ with tab_todo:
                 todo_state[item["id"]] = checked
                 changed = True
 
-    ticket_dated = sorted(
-        (t for t in TODOS if t["category"] == "ticket_dated"),
+    ticket = sorted(
+        (t for t in TODOS if t["category"] == "ticket"),
         key=lambda t: t["date_sort"],
     )
-    ticket_pattern = [t for t in TODOS if t["category"] == "ticket_pattern"]
-    ticket_reminder = [t for t in TODOS if t["category"] == "ticket_reminder"]
-    ticket_anytime = [t for t in TODOS if t["category"] == "ticket_anytime"]
     general = [t for t in TODOS if t["category"] == "general"]
 
     st.markdown("### 🎫 需要提前搶票／預約")
-    st.markdown("#### 有確切日期／時間，時間到了要準時上線搶")
-    _render_todo_group(ticket_dated)
-    st.markdown("#### 官方還沒公布確切開賣日，但查得到參考模式可以推算「大概什麼時候回來查」")
-    _render_todo_group(ticket_pattern)
-    st.markdown("#### 查不到官方公告的開賣規則，只能提醒自己定期查看（不是確定日期）")
-    _render_todo_group(ticket_reminder)
-    st.markdown("#### 沒有日期限制，隨時能買不用搶")
-    _render_todo_group(ticket_anytime)
+    _render_todo_group(ticket)
 
-    st.markdown("### ✅ 待辦清單（非搶票類，一般事務）")
+    st.markdown("### ✅ 一般事務")
     _render_todo_group(general)
 
     if changed:
