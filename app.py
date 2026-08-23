@@ -564,17 +564,36 @@ with tab_wish:
         )
 
 with tab_todo:
-    st.markdown("### ✅ 待辦清單")
     st.caption("誰都可以打勾，狀態大家共用")
 
     todo_state = gist_store.load_todos()
     changed = False
-    for item in TODOS:
-        current = todo_state.get(item["id"], item["default_done"])
-        checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
-        if checked != current:
-            todo_state[item["id"]] = checked
-            changed = True
+
+    def _render_todo_group(items):
+        global changed
+        for item in items:
+            current = todo_state.get(item["id"], item["default_done"])
+            checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
+            if checked != current:
+                todo_state[item["id"]] = checked
+                changed = True
+
+    ticket_dated = sorted(
+        (t for t in TODOS if t["category"] == "ticket_dated"),
+        key=lambda t: t["date_sort"],
+    )
+    ticket_undated = [t for t in TODOS if t["category"] == "ticket_undated"]
+    general = [t for t in TODOS if t["category"] == "general"]
+
+    st.markdown("### 🎫 需要提前搶票／預約")
+    st.markdown("#### 有確切日期／時間，時間到了要準時上線搶")
+    _render_todo_group(ticket_dated)
+    st.markdown("#### 沒有固定截止日期，隨時可辦、越早處理越保險")
+    _render_todo_group(ticket_undated)
+
+    st.markdown("### ✅ 待辦清單（非搶票類，一般事務）")
+    _render_todo_group(general)
+
     if changed:
         gist_store.save_todos(todo_state)
         st.rerun()
