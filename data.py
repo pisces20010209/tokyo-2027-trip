@@ -45,6 +45,7 @@ DAYS = [
             "~15:20 入境/提行李完畢，包車出發前往河口湖（約2.5–3小時）",
             "~17:50–18:20 抵達湖山亭產屋 check-in",
             "晚上看富士山、泡湯；晚餐飯店內用",
+            "📋待辦：機場接送、eSIM、旅平險+不便險、VJW資料填寫（詳見「待辦」分頁，皆已附網址）",
         ],
     },
     {
@@ -882,10 +883,10 @@ TODOS = [
     {"id": "t17", "text": "2026/12/27 10:00 - 小田急浪漫特急箱根座位開賣（Day7），想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T10:00"},
     {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day7），大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
     # -- 一般事務 --
-    {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團，需各約一組）", "default_done": False, "category": "general"},
-    {"id": "t02", "text": "旅平險投保", "default_done": False, "category": "general"},
-    {"id": "t03", "text": "eSIM 購買", "default_done": False, "category": "general"},
-    {"id": "t04", "text": "VJW 填寫資料", "default_done": False, "category": "general"},
+    {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團各約一組，Day1）", "url": "https://www.mtaxi.com.tw/booking/", "default_done": False, "category": "general"},
+    {"id": "t02", "text": "旅平險＋不便險投保（Day1）", "url": "https://www.money101.com.tw/blog/%E6%97%85%E5%B9%B3%E9%9A%AA%E4%B8%8D%E4%BE%BF%E9%9A%AA", "default_done": False, "category": "general"},
+    {"id": "t03", "text": "eSIM 卡購買（Day1）", "url": "https://www.kkday.com/zh-tw/blog/161121/asia-japan-esim", "default_done": False, "category": "general"},
+    {"id": "t04", "text": "VJW（Visit Japan Web）資料填寫（Day1）", "url": "https://services.digital.go.jp/visit-japan-web/", "default_done": False, "category": "general"},
     {"id": "t06", "text": "西瓜卡辦理", "default_done": False, "category": "general"},
     {"id": "t07", "text": "行李箱確認", "default_done": False, "category": "general"},
 ]
