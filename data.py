@@ -45,10 +45,6 @@ DAYS = [
             "~15:20 入境/提行李完畢，包車出發前往河口湖（約2.5–3小時）",
             "~17:50–18:20 抵達湖山亭產屋 check-in",
             "晚上看富士山、泡湯；晚餐飯店內用",
-            "☐ 台灣機場接送預約（新竹團、台南團各約一組）",
-            "☐ eSIM卡購買",
-            "☐ 旅平險＋不便險投保",
-            "☐ VJW（Visit Japan Web）資料填寫 — [官方網站](https://services.digital.go.jp/visit-japan-web/)",
         ],
     },
     {
@@ -885,7 +881,11 @@ TODOS = [
     {"id": "t12", "text": "2026/12/27 00:00 - Shibuya Sky開賣1/24場次（Day4）", "url": "https://www.shibuya-scramble-square.com/sky/ticket/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T00:00"},
     {"id": "t17", "text": "2026/12/27 10:00 - 小田急浪漫特急箱根座位開賣（Day7），想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T10:00"},
     {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day7），大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
-    # -- 一般事務（Day1的4項已移到Day1行程內，這裡不重複列） --
+    # -- 一般事務 --
+    {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團各約一組）", "day": 1, "default_done": False, "category": "general"},
+    {"id": "t02", "text": "eSIM卡購買", "day": 1, "default_done": False, "category": "general"},
+    {"id": "t03", "text": "旅平險＋不便險投保", "day": 1, "default_done": False, "category": "general"},
+    {"id": "t04", "text": "VJW（Visit Japan Web）資料填寫", "url": "https://services.digital.go.jp/visit-japan-web/", "day": 1, "default_done": False, "category": "general"},
     {"id": "t06", "text": "西瓜卡辦理", "default_done": False, "category": "general"},
     {"id": "t07", "text": "行李箱確認", "default_done": False, "category": "general"},
 ]
