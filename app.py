@@ -598,7 +598,7 @@ with tab_todo:
     st.caption("誰都可以打勾，狀態大家共用（有標日期的項目已經直接放在「逐日行程」對應那天裡，這裡不重複列）")
 
     ticket = sorted(
-        (t for t in TODOS if t["category"] == "ticket"),
+        (t for t in TODOS if t["category"] == "ticket" and not t.get("day")),
         key=lambda t: t["date_sort"],
     )
     general = [t for t in TODOS if t["category"] == "general" and not t.get("day")]

@@ -871,7 +871,7 @@ TODOS = [
     {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約（Day5）", "url": "https://akiba2960.com/jp/reservation/", "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
     {"id": "t19", "text": "沒有固定日期 - SHIBUYA STREET RIDE＋SHIBUYA SKY套票查證11人能否成行（Day4備案），限定10席/班，電話：東急巴士下馬營業所03-3410-0181", "url": "https://www.tokyubus.co.jp/SSRIDE/", "default_done": False, "category": "ticket", "date_sort": "2026-11-03"},
     {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次（Day6）", "url": "https://www.tokyodisneyresort.jp/ticket/purchase.html", "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
-    {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放（Day3）", "url": "https://www.fujisafari.co.jp/membership/", "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
+    {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放", "url": "https://www.fujisafari.co.jp/membership/", "day": 3, "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
     {"id": "t12", "text": "2026/12/27 00:00 - Shibuya Sky開賣1/24場次（Day4）", "url": "https://www.shibuya-scramble-square.com/sky/ticket/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T00:00"},
     {"id": "t17", "text": "2026/12/27 10:00 - 小田急浪漫特急箱根座位開賣（Day7），想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T10:00"},
     {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day7），大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
