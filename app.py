@@ -595,21 +595,26 @@ with tab_wish:
         )
 
 with tab_todo:
-    st.caption("誰都可以打勾，狀態大家共用（有標日期的項目已經直接放在「逐日行程」對應那天裡，這裡不重複列）")
-
     ticket = sorted(
         (t for t in TODOS if t["category"] == "ticket" and not t.get("day")),
         key=lambda t: t["date_sort"],
     )
     general = [t for t in TODOS if t["category"] == "general" and not t.get("day")]
 
-    st.markdown("### 🎫 需要提前搶票／預約")
-    for t in ticket:
-        render_todo_checkbox(t)
+    if not ticket and not general:
+        st.caption("所有待辦都已經按日期放進「逐日行程」對應那天底下了，點開每天的展開區塊就會看到可以打勾的項目")
+    else:
+        st.caption("誰都可以打勾，狀態大家共用（有標日期的項目已經直接放在「逐日行程」對應那天裡，這裡不重複列）")
 
-    st.markdown("### ✅ 一般事務")
-    for t in general:
-        render_todo_checkbox(t)
+        if ticket:
+            st.markdown("### 🎫 需要提前搶票／預約")
+            for t in ticket:
+                render_todo_checkbox(t)
+
+        if general:
+            st.markdown("### ✅ 一般事務")
+            for t in general:
+                render_todo_checkbox(t)
 
 if _todo_dirty:
     gist_store.save_todos(todo_state)

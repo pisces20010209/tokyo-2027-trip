@@ -865,21 +865,22 @@ FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 # url欄位是每個搶票項目的官方購票/查詢頁面，app.py會把它渲染成獨立的可點擊連結
 # （不能塞進checkbox的label裡，checkbox label點下去只會觸發打勾，不會連出去）。
 TODOS = [
-    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢（Day4）", "url": "https://www.shijou.metro.tokyo.lg.jp/calendar/", "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
-    {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布（Day8）", "url": "https://www.jre-travel.com/seasonal/ski/gala/", "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
-    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買（Day4）", "url": "https://teamlabplanets.dmm.com/", "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
-    {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約（Day5）", "url": "https://akiba2960.com/jp/reservation/", "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
-    {"id": "t19", "text": "沒有固定日期 - SHIBUYA STREET RIDE＋SHIBUYA SKY套票查證11人能否成行（Day4備案），限定10席/班，電話：東急巴士下馬營業所03-3410-0181", "url": "https://www.tokyubus.co.jp/SSRIDE/", "default_done": False, "category": "ticket", "date_sort": "2026-11-03"},
-    {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次（Day6）", "url": "https://www.tokyodisneyresort.jp/ticket/purchase.html", "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
+    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢", "url": "https://www.shijou.metro.tokyo.lg.jp/calendar/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
+    {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布", "url": "https://www.jre-travel.com/seasonal/ski/gala/", "day": 8, "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
+    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買", "url": "https://teamlabplanets.dmm.com/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
+    {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約", "url": "https://akiba2960.com/jp/reservation/", "day": 5, "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
+    {"id": "t19", "text": "沒有固定日期 - SHIBUYA STREET RIDE＋SHIBUYA SKY套票查證11人能否成行（備案），限定10席/班，電話：東急巴士下馬營業所03-3410-0181", "url": "https://www.tokyubus.co.jp/SSRIDE/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-11-03"},
+    {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次", "url": "https://www.tokyodisneyresort.jp/ticket/purchase.html", "day": 6, "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
     {"id": "t16", "text": "2026/12/1 12:00 - 富士サファリパーク巴士預約開放", "url": "https://www.fujisafari.co.jp/membership/", "day": 3, "default_done": False, "category": "ticket", "date_sort": "2026-12-01"},
-    {"id": "t12", "text": "2026/12/27 00:00 - Shibuya Sky開賣1/24場次（Day4）", "url": "https://www.shibuya-scramble-square.com/sky/ticket/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T00:00"},
-    {"id": "t17", "text": "2026/12/27 10:00 - 小田急浪漫特急箱根座位開賣（Day7），想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "default_done": False, "category": "ticket", "date_sort": "2026-12-27T10:00"},
-    {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買（Day7），大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
+    {"id": "t12", "text": "2026/12/27 00:00 - Shibuya Sky開賣1/24場次", "url": "https://www.shibuya-scramble-square.com/sky/ticket/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-12-27T00:00"},
+    {"id": "t17", "text": "2026/12/27 10:00 - 小田急浪漫特急箱根座位開賣，想要展望席要當場挑有展望席的班次", "url": "https://www.web-odakyu.com/e-romancecar/", "day": 7, "default_done": False, "category": "ticket", "date_sort": "2026-12-27T10:00"},
+    {"id": "t15", "text": "沒有期限 - 箱根フリーパス購買，大人¥7,100/小學生¥1,600", "url": "https://www.odakyu-freepass.jp/hakone/", "day": 7, "default_done": False, "category": "ticket", "date_sort": "9999-12-31"},
     # -- 一般事務 --
     {"id": "t01", "text": "台灣機場接送預約（新竹團、台南團各約一組）", "day": 1, "default_done": False, "category": "general"},
     {"id": "t02", "text": "eSIM卡購買", "day": 1, "default_done": False, "category": "general"},
     {"id": "t03", "text": "旅平險＋不便險投保", "day": 1, "default_done": False, "category": "general"},
     {"id": "t04", "text": "VJW（Visit Japan Web）資料填寫", "url": "https://services.digital.go.jp/visit-japan-web/", "day": 1, "default_done": False, "category": "general"},
-    {"id": "t06", "text": "西瓜卡辦理", "default_done": False, "category": "general"},
-    {"id": "t07", "text": "行李箱確認", "default_done": False, "category": "general"},
+    {"id": "t20", "text": "日本包車確認（1/22–1/23）——已訂美好假期，尾款¥255,000元1/21當天付司機", "day": 1, "default_done": True, "category": "general"},
+    {"id": "t21", "text": "行李箱確認", "day": 1, "default_done": False, "category": "general"},
+    {"id": "t06", "text": "西瓜卡辦理（這天第一次搭電車，建議前一天前辦好）", "day": 4, "default_done": False, "category": "general"},
 ]
