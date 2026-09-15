@@ -86,17 +86,17 @@ DAYS = [
     {
         "day": 4,
         "date": "1/24（週日）",
-        "title": "豐洲市場 + teamLab + 澀谷 + Shibuya Sky",
+        "title": "teamLab + 千客萬来 + 澀谷 + Shibuya Sky",
         "status": "草案・暫定，依實際預約狀況隨時調整",
         "transit": "🚇 上野→豐洲（經新橋轉乘，約45–55分）；豐洲→澀谷（接山手線）",
         "items": [
+            "⚠️ 豐洲市場星期日固定公休（星期日／國定假日／沒假日那週的星期三，官方FAQ查證），1/24當天進不去，行程不排豐洲市場；緊鄰的千客萬来年中無休，不受影響",
             "⚠️ Shibuya Sky預約於入場日前28天日本時間00:00開放，1/24最快2026/12/27東京時間00:00搶票",
             "🚌 替代方案（使用者查證中）：東急巴士「SHIBUYA STREET RIDE」雙層敞篷觀光巴士＋SHIBUYA SKY入場兌換券套票，附贈的入場券當天營業時間內隨時可兌換入場、不綁定特定時段，可避開12/27 00:00搶票；⚠️但每班次限定10席，11人一班坐不滿，需現場向東急巴士下馬營業所（03-3410-0181）確認能否湊到11人／要不要分兩班，查證前Shibuya Sky一般訂票照常準時搶",
-            "10:00–11:00 豐洲市場（⚠️公休日不固定需確認）",
-            "11:00–11:30 千客萬来",
-            "11:30–14:30 teamLab Planets TOKYO（⚠️需提前訂票，建議選較早時段）",
-            "14:30–15:20 移動到澀谷",
-            "15:20–16:00 澀谷Scramble Crossing、八公像",
+            "一早：teamLab Planets TOKYO（⚠️需提前訂票；開館時間依日期浮動，查到最早08:30最晚10:00開，確切時間等官網運營行事曆公布；建議一開門就去人較少，官方建議所需2–2.5小時）",
+            "中午：千客萬来（緊鄰teamLab，當中餐地點，順便逛逛）",
+            "下午：移動到澀谷",
+            "澀谷Scramble Crossing、八公像",
             "16:00起 Shibuya Sky（日落場次，⚠️需提前線上預約；入場時間有指定，但進去之後沒有硬性限時，可以待到22:30閉館，不用趕）",
         ],
     },
@@ -212,7 +212,6 @@ SPOTS = [
     {"name": "平野之濱", "day": 3, "category": "景點", "lat": 35.4262, "lon": 138.9037},  # 同上，山中湖畔
     {"name": "富士サファリパーク", "day": 3, "category": "景點", "lat": 35.2602, "lon": 138.8062},
     {"name": "MONday Apart Premium 上野御徒町（住宿）", "day": 3, "category": "住宿", "lat": 35.7044329, "lon": 139.7739581},  # 飯店官網嵌入的Google商家地標座標，取代舊的御徒町駅fallback
-    {"name": "豐洲市場", "day": 4, "category": "景點", "lat": 35.6455, "lon": 139.7828},
     {"name": "千客萬来", "day": 4, "category": "景點", "lat": 35.643154, "lon": 139.780136},  # 政府地理院街廓等級座標，取代舊值（原座標誤差約460m）
     {"name": "teamLab Planets TOKYO", "day": 4, "category": "景點", "lat": 35.649075, "lon": 139.789525},  # 兩個獨立來源交叉核對，取代舊值（原座標誤差約290m）
     {"name": "澀谷 Scramble Crossing", "day": 4, "category": "景點", "lat": 35.6595, "lon": 139.7005},
@@ -261,7 +260,6 @@ ALREADY_SCHEDULED = {
     "淺草寺": 5,
     "仲見世通": 5,
     "東京迪士尼海洋": 6,
-    "豐洲市場": 4,
     "teamLab Planets": 4,
     "Shibuya Sky": 4,
     "澀谷十字路口": 4,
@@ -865,7 +863,6 @@ FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 # url欄位是每個搶票項目的官方購票/查詢頁面，app.py會把它渲染成獨立的可點擊連結
 # （不能塞進checkbox的label裡，checkbox label點下去只會觸發打勾，不會連出去）。
 TODOS = [
-    {"id": "t08", "text": "2026/9月左右（未公布，依往例推算）- 豐洲市場公休日曆查詢", "url": "https://www.shijou.metro.tokyo.lg.jp/calendar/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-09-01"},
     {"id": "t18", "text": "2026/9–10月（未公布）- GALA湯澤 JR SKISKI套票公布", "url": "https://www.jre-travel.com/seasonal/ski/gala/", "day": 8, "default_done": False, "category": "ticket", "date_sort": "2026-09-15"},
     {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買", "url": "https://teamlabplanets.dmm.com/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
     {"id": "t10", "text": "2026/11月起 - アキバフクロウ線上預約", "url": "https://akiba2960.com/jp/reservation/", "day": 5, "default_done": False, "category": "ticket", "date_sort": "2026-11-02"},
