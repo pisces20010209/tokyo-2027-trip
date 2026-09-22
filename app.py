@@ -24,7 +24,6 @@ from data import (
     FOOD_CANDIDATES,
     HOTELS,
     SPOTS,
-    TODOS,
     TRANSPORT,
     TRANSPORT_NOTE,
 )
@@ -478,23 +477,8 @@ def render_map() -> None:
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
 st.caption("11人・全員iPhone・這頁大家都能看到同一份內容，投票/許願會即時同步")
 
-todo_state = gist_store.load_todos()
-_todo_dirty = []
-
-
-def render_todo_checkbox(item: dict) -> None:
-    """Interactive checkbox for one TODOS entry, backed by gist_store (shared across everyone)."""
-    current = todo_state.get(item["id"], item["default_done"])
-    checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
-    if item.get("url"):
-        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔗 [{item['url']}]({item['url']})")
-    if checked != current:
-        todo_state[item["id"]] = checked
-        _todo_dirty.append(True)
-
-
-tab_itinerary, tab_map, tab_food, tab_spot, tab_wish, tab_todo = st.tabs(
-    ["📅 逐日行程", "🗺️ 地圖", "🍜 美食投票", "🎡 景點投票", "🌟 許願池", "✅ 待辦清單"]
+tab_itinerary, tab_map, tab_food, tab_spot, tab_wish = st.tabs(
+    ["📅 逐日行程", "🗺️ 地圖", "🍜 美食投票", "🎡 景點投票", "🌟 許願池"]
 )
 
 with tab_itinerary:
@@ -521,11 +505,6 @@ with tab_itinerary:
                 st.info(d["transit"])
             for item in d["items"]:
                 st.markdown(f"- {item}")
-            day_todos = [t for t in TODOS if t.get("day") == d["day"]]
-            if day_todos:
-                st.markdown("**待辦：**")
-                for t in day_todos:
-                    render_todo_checkbox(t)
 
 with tab_map:
     render_map()
@@ -594,28 +573,3 @@ with tab_wish:
             hide_index=True,
         )
 
-with tab_todo:
-    ticket = sorted(
-        (t for t in TODOS if t["category"] == "ticket" and not t.get("day")),
-        key=lambda t: t["date_sort"],
-    )
-    general = [t for t in TODOS if t["category"] == "general" and not t.get("day")]
-
-    if not ticket and not general:
-        st.caption("所有待辦都已經按日期放進「逐日行程」對應那天底下了，點開每天的展開區塊就會看到可以打勾的項目")
-    else:
-        st.caption("誰都可以打勾，狀態大家共用（有標日期的項目已經直接放在「逐日行程」對應那天裡，這裡不重複列）")
-
-        if ticket:
-            st.markdown("### 🎫 需要提前搶票／預約")
-            for t in ticket:
-                render_todo_checkbox(t)
-
-        if general:
-            st.markdown("### ✅ 一般事務")
-            for t in general:
-                render_todo_checkbox(t)
-
-if _todo_dirty:
-    gist_store.save_todos(todo_state)
-    st.rerun()
