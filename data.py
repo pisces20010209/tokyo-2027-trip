@@ -879,5 +879,5 @@ TODOS = [
     {"id": "t04", "text": "VJW（Visit Japan Web）資料填寫", "url": "https://services.digital.go.jp/visit-japan-web/", "day": 1, "default_done": False, "category": "general"},
     {"id": "t20", "text": "日本包車確認（1/22–1/23）——已訂美好假期，尾款1/21當天付司機", "day": 1, "default_done": True, "category": "general"},
     {"id": "t21", "text": "行李箱確認", "day": 1, "default_done": False, "category": "general"},
-    {"id": "t06", "text": "西瓜卡辦理（這天第一次搭電車，建議前一天前辦好）", "day": 4, "default_done": False, "category": "general"},
+    {"id": "t06", "text": "西瓜卡辦理（下飛機入境後現場買：成田機場第1航廈／第2‧3航廈站內的JR東日本旅行服務中心，或Welcome Suica自動販賣機；建議買Welcome Suica，免押金、效期28天，範圍剛好蓋過整趟行程）", "day": 1, "default_done": False, "category": "general"},
 ]
