@@ -100,6 +100,15 @@ def save_votes(rows: list[dict]) -> bool:
     return _save("votes", rows)
 
 
+def load_todos() -> dict:
+    """Map of todo id -> bool (done)."""
+    return _load("todos", {})
+
+
+def save_todos(state: dict) -> bool:
+    return _save("todos", state)
+
+
 def load_maplog() -> dict:
     """Monthly Google Maps JS load counter: {"month": "YYYY-MM", "count": int}.
     Not yet called from app.py — scaffolding for the Phase B soft-cap fallback

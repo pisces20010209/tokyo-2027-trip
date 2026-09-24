@@ -24,6 +24,7 @@ from data import (
     FOOD_CANDIDATES,
     HOTELS,
     SPOTS,
+    TODOS,
     TRANSPORT,
     TRANSPORT_NOTE,
 )
@@ -477,6 +478,21 @@ def render_map() -> None:
 st.title("🗾 2027 東京家族旅遊 1/21–1/29")
 st.caption("11人・全員iPhone・這頁大家都能看到同一份內容，投票/許願會即時同步")
 
+todo_state = gist_store.load_todos()
+_todo_dirty = []
+
+
+def render_todo_checkbox(item: dict) -> None:
+    """Interactive checkbox for one TODOS entry, backed by gist_store (shared across everyone)."""
+    current = todo_state.get(item["id"], item["default_done"])
+    checked = st.checkbox(item["text"], value=current, key=f"todo_{item['id']}")
+    if item.get("url"):
+        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔗 [{item['url']}]({item['url']})")
+    if checked != current:
+        todo_state[item["id"]] = checked
+        _todo_dirty.append(True)
+
+
 tab_itinerary, tab_map, tab_food, tab_spot, tab_wish = st.tabs(
     ["📅 逐日行程", "🗺️ 地圖", "🍜 美食投票", "🎡 景點投票", "🌟 許願池"]
 )
@@ -505,6 +521,11 @@ with tab_itinerary:
                 st.info(d["transit"])
             for item in d["items"]:
                 st.markdown(f"- {item}")
+            day_todos = [t for t in TODOS if t.get("day") == d["day"]]
+            if day_todos:
+                st.markdown("**待辦：**")
+                for t in day_todos:
+                    render_todo_checkbox(t)
 
 with tab_map:
     render_map()
@@ -572,4 +593,8 @@ with tab_wish:
             use_container_width=True,
             hide_index=True,
         )
+
+if _todo_dirty:
+    gist_store.save_todos(todo_state)
+    st.rerun()
 
