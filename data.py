@@ -93,7 +93,7 @@ DAYS = [
             "⚠️ 豐洲市場星期日固定公休（星期日／國定假日／沒假日那週的星期三，官方FAQ查證），1/24當天進不去，行程不排豐洲市場；緊鄰的千客萬来年中無休，不受影響",
             "⚠️ Shibuya Sky預約於入場日前28天日本時間00:00開放，1/24最快2026/12/27東京時間00:00搶票",
             "🚌 替代方案（使用者查證中）：東急巴士「SHIBUYA STREET RIDE」雙層敞篷觀光巴士＋SHIBUYA SKY入場兌換券套票，附贈的入場券當天營業時間內隨時可兌換入場、不綁定特定時段，可避開12/27 00:00搶票；⚠️但每班次限定10席，11人一班坐不滿，需現場向東急巴士下馬營業所（03-3410-0181）確認能否湊到11人／要不要分兩班，查證前Shibuya Sky一般訂票照常準時搶",
-            "一早：teamLab Planets TOKYO（⚠️需提前訂票；開館時間依日期浮動，查到最早08:30最晚10:00開，確切時間等官網運營行事曆公布；建議一開門就去人較少，官方建議所需2–2.5小時）",
+            "一早：teamLab Planets TOKYO（✅門票已購買；開館時間依日期浮動，查到最早08:30最晚10:00開，確切時間等官網運營行事曆公布；建議一開門就去人較少，官方建議所需2–2.5小時）",
             "中午：千客萬来（緊鄰teamLab，當中餐地點，順便逛逛）",
             "下午：移動到澀谷",
             "澀谷Scramble Crossing、八公像",
@@ -870,7 +870,7 @@ FOOD_CANDIDATES = _build_food_candidates(FOOD_REGIONS)
 # （不能塞進checkbox的label裡，checkbox label點下去只會觸發打勾，不會連出去）。
 TODOS = [
     {"id": "t18", "text": "2026/11月起 - GALA湯澤「新幹線來回＋纜車觀景券」日帰り套票開賣查看（一筆訂單最多8人，11人要分2筆訂）", "url": "https://www.jre-travel.com/seasonal/ski/gala/", "day": 8, "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
-    {"id": "t09", "text": "2026/11月起 - teamLab Planets TOKYO 門票查看購買", "url": "https://teamlabplanets.dmm.com/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-11-01"},
+    {"id": "t09", "text": "✅已購買 - teamLab Planets TOKYO 1/24 門票（11張）", "url": "https://teamlabplanets.dmm.com/", "day": 4, "default_done": True, "category": "ticket", "date_sort": "2026-11-01"},
     {"id": "t10", "text": "✅已預訂 - アキバフクロウ 1/25（一）17:00，16:50前到店門口", "url": "https://akiba2960.com/jp/reservation/", "day": 5, "default_done": True, "category": "ticket", "date_sort": "2026-11-02"},
     {"id": "t19", "text": "沒有固定日期 - SHIBUYA STREET RIDE＋SHIBUYA SKY套票查證11人能否成行（備案），限定10席/班，電話：東急巴士下馬營業所03-3410-0181", "url": "https://www.tokyubus.co.jp/SSRIDE/", "day": 4, "default_done": False, "category": "ticket", "date_sort": "2026-11-03"},
     {"id": "t05", "text": "2026/11/26 14:00 - 東京迪士尼海洋門票開賣1/26場次", "url": "https://www.tokyodisneyresort.jp/ticket/purchase.html", "day": 6, "default_done": False, "category": "ticket", "date_sort": "2026-11-26"},
